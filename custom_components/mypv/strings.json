@@ -1,0 +1,40 @@
+{
+  "title": "myPV",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "min_ip": "[%key:common::config_flow::data::min_ip%]",
+          "max_ip": "[%key:common::config_flow::data::max_ip%]"
+        }
+      }
+    },
+    "error": {
+      "could_not_connect": "[%key:common::config_flow::error::min_ip%]",
+      "host_exists": "[%key:common::config_flow::error::min_ip%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "host_exists": "[%key:common::config_flow::abort::min_ip%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "min_ip": "[%key:common::config_flow::data::min_ip%]",
+          "max_ip": "[%key:common::config_flow::data::max_ip%]"
+        },
+        "title": "Setup communication"
+      }
+    },
+    "error": {
+      "could_not_connect": "[%key:common::config_flow::error::min_ip%]",
+      "host_exists": "[%key:common::config_flow::error::min_ip%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+}

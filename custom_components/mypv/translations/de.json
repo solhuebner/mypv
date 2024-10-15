@@ -1,0 +1,21 @@
+{
+  "config": {
+    "title": "myPV",
+    "step": {
+      "user": {
+        "data": {
+          "min_ip": "Untere Grenze des IP-Suchbereichs für myPV Geräte",
+          "max_ip": "Obere Grenze des IP-Suchbereichs für myPV Geräte"
+        }
+      }
+    },
+    "error": {
+      "could_not_connect": "Kein myPV-Gerät im angegebenen Adressbereich gefunden",
+      "host_exists": "Gefundene Geräte wurden bereits konfiguriert",
+      "unknown": "Unbekannter Fehler aufgetreten"
+    },
+    "abort": {
+      "host_exists": "Gefundene Geräte wurden bereits konfiguriert"
+    }
+  }
+}

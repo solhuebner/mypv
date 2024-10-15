@@ -1,0 +1,21 @@
+{
+  "config": {
+    "title": "myPV",
+    "step": {
+      "user": {
+        "data": {
+          "min_ip": "The lower ip address of detection range for myPV devices",
+          "max_ip": "The upper ip address of detection range for myPV devices"
+        }
+      }
+    },
+    "error": {
+      "could_not_connect": "No myPV device found in given ip range",
+      "host_exists": "Found hosts are already configured",
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "host_exists": "Found hosts are already configured"
+    }
+  }
+}
