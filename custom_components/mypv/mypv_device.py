@@ -41,6 +41,7 @@ class MpyDevice(CoordinatorEntity):
         self.controls = []
         self.switches = []
         self.text_sensors = []
+        self.state_dict = {}
         self.max_power = 3600
         self.pid_power = 0
         self.pid_power_set = 0
@@ -48,8 +49,8 @@ class MpyDevice(CoordinatorEntity):
 
     async def initialize(self):
         """Get setup information, find sensors."""
-        self.setup = await self.comm.setup_update(self._ip)
-        self.data = await self.comm.data_update(self._ip)
+        self.setup = await self.comm.setup_update(self)
+        self.data = await self.comm.data_update(self)
         await self.init_sensors()
         dr.async_get(self._hass).async_get_or_create(
             config_entry_id=self._entry.entry_id,
@@ -136,9 +137,8 @@ class MpyDevice(CoordinatorEntity):
 
     async def update(self):
         """Update all sensors."""
-        resp = await self.comm.data_update(self._ip)
+        resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
-        state = await self.comm.state_update(self._ip)
-        if state:
-            self.state = state
+        if await self.comm.state_update(self):
+            self.state = int(self.state_dict["State"])

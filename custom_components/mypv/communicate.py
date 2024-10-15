@@ -38,7 +38,7 @@ async def detect_mypv(ip_str: str) -> list[str]:
     own_ip = get_own_ip(ip_str)
 
     ip_parts = ip_str.split(".")
-    udp_ip = "255.255.255.255" # f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}.0"
+    udp_ip = "255.255.255.255"  # f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}.0"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.settimeout(timeout_time)
@@ -85,7 +85,7 @@ class MypvCommunicator(DataUpdateCoordinator):
 
         for ip_str in self.hosts:
             try:
-                info_data = await self.info_update(ip_str)
+                info_data = await self.check_ip(ip_str)
                 if info_data:
                     self.devices.append(MpyDevice(self, ip_str, info_data))
                     await self.devices[-1].initialize()
@@ -107,7 +107,7 @@ class MypvCommunicator(DataUpdateCoordinator):
         ):
             return await resp.text()
 
-    async def info_update(self, ip: str):
+    async def check_ip(self, ip):
         """Update inverter info."""
         try:
             url = f"http://{ip}/mypv_dev.jsn"
@@ -115,64 +115,87 @@ class MypvCommunicator(DataUpdateCoordinator):
             return json.loads(response_text)
         except Exception:  # noqa: BLE001
             return False
+    async def info_update(self, device):
+        """Update inverter info."""
+        try:
+            url = f"http://{device.ip}/mypv_dev.jsn"
+            response_text = await self.do_get_request(url)
+            return json.loads(response_text)
+        except Exception:  # noqa: BLE001
+            return False
 
-    async def data_update(self, ip: str):
+    async def data_update(self, device):
         """Update inverter data info."""
         try:
-            url = f"http://{ip}/data.jsn"
+            url = f"http://{device.ip}/data.jsn"
             response_text = await self.do_get_request(url)
             return json.loads(response_text)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during data update: {err_msg}")  # noqa: G004
             return False
 
-    async def setup_update(self, ip: str):
+    async def setup_update(self, device):
         """Update inverter setup info."""
         try:
-            url = f"http://{ip}/setup.jsn"
+            url = f"http://{device.ip}/setup.jsn"
             response_text = await self.do_get_request(url)
             return json.loads(response_text)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during setup update: {err_msg}")  # noqa: G004
             return False
 
-    async def state_update(self, ip:str):
+    async def state_update(self, device):
         """Update control state."""
         try:
-            url = f"http://{ip}/control.html?"
+            url = f"http://{device.ip}/control.html?"
             response_text = await self.do_get_request(url)
-            resp_lines = response_text.split("\n")[1].split("<br")
-            return int(resp_lines[0].split("=")[1])
+            self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during setup update: {err_msg}")  # noqa: G004
             return False
+        else:
+            return True
 
-    async def set_power(self, ip: str, act_pow: int):
+    async def set_power(self, device, act_pow: int):
         """Set heater power."""
         try:
-            url = f"http://{ip}/control.html?power={act_pow}"
+            url = f"http://{device.ip}/control.html?power={act_pow}"
             response_text = await self.do_get_request(url)
-            return
+            self.get_state_dict(response_text, device)
+            return True  # noqa: TRY300
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during set power command: {err_msg}")  # noqa: G004
             return False
 
-    async def set_pid_power(self, ip: str, act_pow: int):
+    async def set_pid_power(self, device, act_pow: int):
         """Set heater power with local pid control."""
         try:
-            url = f"http://{ip}/control.html?pid_power={act_pow}"
+            url = f"http://{device.ip}/control.html?pid_power={act_pow}"
             response_text = await self.do_get_request(url)
-            return
+            self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during set pid power command: {err_msg}")  # noqa: G004
             return False
+        else:
+            return True
 
-    async def switch_boost(self, ip: str, state: bool):
+    async def switch_boost(self, device, state: bool):
         """Set heater power with local pid control."""
         try:
-            url = f"http://{ip}/control.html?boost={int(state)}"
+            url = f"http://{device.ip}/control.html?boost={int(state)}"
             response_text = await self.do_get_request(url)
-            return
+            self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.info(f"Error during boost command: {err_msg}")  # noqa: G004
             return False
+        else:
+            return True
+
+    def get_state_dict(self, text: str, device) -> None:
+        """Convert lines to state dict."""
+
+        resp_lines = text.split("\n")[1].split("<br")[:10]
+        for line in resp_lines:
+            line = line.replace(">", "").split("&")[0].strip()
+            parts = line.split("=")
+            device.state_dict[parts[0]] = parts[1].split()[0]

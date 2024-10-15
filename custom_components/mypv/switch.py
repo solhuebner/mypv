@@ -1,5 +1,6 @@
 """Switches of myPV integration."""
 
+import asyncio
 import logging
 from typing import Any
 
@@ -114,20 +115,37 @@ class MpvPidControlSwitch(CoordinatorEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return status of output."""
-        return self.device.data[self._key] > 0
+        if self.device.pid_power_set == 1:
+            # waiting for http_control_mode
+            return True
+        if self.device.pid_power_set in range(2,4):
+            # waiting for power to be set by PID
+            self.device.pid_power_set += 1
+            return True
+        if self.device.data[self._key] > 20 and self.device.pid_power_set > 0:
+            return True
+        self.device.pid_power_set = 0
+        return False
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self._attr_is_on = self.device.data[self._key] > 0
-        self.async_write_ha_state()
+    # @callback
+    # def _handle_coordinator_update(self) -> None:
+    #     """Handle updated data from the coordinator."""
+    #     self._attr_is_on = self.device.data[self._key] > 20 and  self.device.pid_power_set > 0
+    #     self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Instruct the switch to turn on."""
         self.device.pid_power_set = 1
-        await self.comm.set_pid_power(self.device.ip, PID_POWER_ON_VALUE)
+        http_control_mode = False
+        while not http_control_mode:
+            await self.comm.set_pid_power(self.device, PID_POWER_ON_VALUE)
+            await asyncio.sleep(1)
+            http_control_mode = self.device.state_dict['Control State'] == "HTTP"
+        await self.comm.set_pid_power(self.device, PID_POWER_ON_VALUE)
+        await asyncio.sleep(1)
+        self.device.pid_power_set = 2
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Instruct the switch to turn off."""
         self.device.pid_power_set = 0
-        await self.comm.set_pid_power(self.device.ip, PID_POWER_OFF_VALUE)
+        await self.comm.set_pid_power(self.device, PID_POWER_OFF_VALUE)

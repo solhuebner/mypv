@@ -66,7 +66,7 @@ class MpvPowerControl3500(CoordinatorEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Set the new value."""
         self._attr_native_value = value
-        await self.comm.set_power(self.device.ip, int(value))
+        await self.comm.set_power(self.device, int(value))
 
 
 # class MpvPidPowerControl3500(MpvPowerControl3500):
