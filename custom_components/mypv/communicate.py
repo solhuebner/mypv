@@ -29,7 +29,7 @@ def get_own_ip(def_ip):
 
 
 async def detect_mypv(ip_str: str) -> list[str]:
-    """Detect myPV devices by udp boradcast, return list of ips."""
+    """Detect myPV devices by udp broadcast, return list of ips."""
 
     timeout_time = 10
     time_out = time.time() + timeout_time

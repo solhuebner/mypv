@@ -8,7 +8,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .communicate import MypvCommunicator, detect_mypv
+from .communicate import MypvCommunicator
 from .const import COMM_HUB, DOMAIN, MAX_IP, MIN_IP
 
 CONFIG_SCHEMA = vol.Schema(
@@ -28,6 +28,7 @@ PLATFORMS: list[str] = [
     "binary_sensor",
     "number",
     "sensor",
+    "switch",
 ]
 
 

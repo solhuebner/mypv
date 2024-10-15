@@ -2,7 +2,7 @@
 
 Home Assistant Component for myPV
 
-<a href="https://github.com/dneprojects/mypv></a>
+<a href="https://github.com/dneprojects/mypv"></a>
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
@@ -17,7 +17,7 @@ Add integration 'myPV' in the settings
 
 ### Manual download
 
-Copy this folder to '<config_dir>/custom_components/mypv/'.
+Copy this folder to 'config/custom_components/mypv'.
 Restart Home Assistant.
 Add integration 'myPV' in the settings section.
 

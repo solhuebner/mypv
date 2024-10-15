@@ -8,9 +8,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .binary_sensor import MpvBinSensor
 from .const import DOMAIN, SENSOR_TYPES
-from .number import MpvPidPowerControl3500, MpvPowerControl3500
+from .number import MpvPowerControl3500
 from .sensor import MpvDevStatSensor, MpvSensor, MpvUpdateSensor
-from .switch import MpvSwitch
+from .switch import MpvPidControlSwitch, MpvSwitch
 
 # from .text import MpvTxtSensor
 
@@ -129,8 +129,9 @@ class MpyDevice(CoordinatorEntity):
                     self.controls.append(
                         MpvPowerControl3500(self, key, SENSOR_TYPES[key])
                     )
-                    self.controls.append(
-                        MpvPidPowerControl3500(self, key, SENSOR_TYPES[key])
+                    # PID controller is turned on, control power by itself
+                    self.switches.append(
+                        MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
                     )
 
     async def update(self):
