@@ -134,6 +134,11 @@ class MpyDevice(CoordinatorEntity):
                     self.switches.append(
                         MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
                     )
+                    # Setup as sensor, too
+                    self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
+            if SENSOR_TYPES[key][2] in ["sensor_always"]:
+                # Sensor value might not be available at statrtup
+                self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
 
     async def update(self):
         """Update all sensors."""

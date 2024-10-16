@@ -32,6 +32,11 @@ The myPV custom integration works locally in the home network utilizing the http
 - The integration is written to support multiple devices. However, it is only tested just with one (ELWA 2).
 - It offers binary sensors and sensors for all data points provided by the myPV devices.
 - The heating power can be set manually by an input number between 0 and 3600 W. This will turn on the heater for a predefined time period. This period has to been setup via web or cloud setup, as it is not supported by the myPV api.
-- A second number input can be used to pass control to the local PID controller. It also takes values from 0 to 3600 W, but the actual power is controlled by the device itself.
+- A switch can be used to pass control to the local PID controller. The actual heating power is controlled by the device itself. This mode also depends on the configured time period.
 
+## Credits
 
+This integration is based on an implementation https://github.com/zaubererty/homeassistant-mvpv.
+Although it worked fine, the main feature, controlling the device by home assistant automations was not possible.
+So I totally rewrote the integration. 
+However, thanks to the work of zaubererty at this place!

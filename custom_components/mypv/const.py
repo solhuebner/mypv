@@ -81,7 +81,7 @@ SENSOR_TYPES = {
     "meter5_ip": ["meter5_ip", None, "sensor"],
     "meter6_id": ["meter6_id", None, "sensor"],
     "meter6_ip": ["meter6_ip", None, "sensor"],
-    "surplus": ["surplus", None, "sensor"],
+    "surplus": ["Überschuss", None, "sensor_always"],
     "m0sum": ["m0sum", None, "sensor"],
     "m0l1": ["m0l1", None, "sensor"],
     "m0l2": ["m0l2", None, "sensor"],
