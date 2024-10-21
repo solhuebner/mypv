@@ -146,4 +146,7 @@ class MpyDevice(CoordinatorEntity):
         if resp:
             self.data = resp
         if await self.comm.state_update(self):
-            self.state = int(self.state_dict["State"])
+            if "State" in self.state_dict:
+                self.state = int(self.state_dict["State"])
+            else:
+                self.state = 0
