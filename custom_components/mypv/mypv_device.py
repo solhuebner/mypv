@@ -149,4 +149,4 @@ class MpyDevice(CoordinatorEntity):
             if "State" in self.state_dict:
                 self.state = int(self.state_dict["State"])
             else:
-                self.state = 0
+                self.state = -1
