@@ -190,6 +190,7 @@ class MpvDevStatSensor(MpvSensor):
         """Return the state of the device."""
 
         DEVICE_STATE = {
+            0: "State not available",
             1: "No control",
             2: "Heat",
             3: "Standby",
