@@ -5,6 +5,7 @@ Home Assistant Component for myPV
 <a href="https://github.com/dneprojects/mypv"></a>
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+  <img src="https://img.shields.io/github/v/release/dneprojects/mypv" alt="Current version">
 
 ## Installation
 
