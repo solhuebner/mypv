@@ -62,8 +62,6 @@ class MypvCommunicator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize data updater."""
         self.config_entry = entry
-        self.min_ip = entry.data[MIN_IP]
-        self.max_ip = entry.data[MAX_IP]
         self.hosts = entry.data[CONF_HOSTS]
         self._info = None
         self._setup = None
@@ -115,6 +113,7 @@ class MypvCommunicator(DataUpdateCoordinator):
             return json.loads(response_text)
         except Exception:  # noqa: BLE001
             return False
+
     async def info_update(self, device):
         """Update inverter info."""
         try:
@@ -146,15 +145,18 @@ class MypvCommunicator(DataUpdateCoordinator):
 
     async def state_update(self, device):
         """Update control state."""
-        try:
-            url = f"http://{device.ip}/control.html?"
-            response_text = await self.do_get_request(url)
-            self.get_state_dict(response_text, device)
-        except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during setup update: {err_msg}")  # noqa: G004
-            return False
-        else:
-            return True
+        if device.control_enabled:
+            try:
+                url = f"http://{device.ip}/control.html?"
+                response_text = await self.do_get_request(url)
+                self.get_state_dict(response_text, device)
+            except Exception as err_msg:  # noqa: BLE001
+                self.logger.info(f"Error during setup control update: {err_msg}")  # noqa: G004
+                device.control_enabled = False
+                return False
+            else:
+                return True
+        return False
 
     async def set_power(self, device, act_pow: int):
         """Set heater power."""

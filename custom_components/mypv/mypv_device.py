@@ -46,12 +46,14 @@ class MpyDevice(CoordinatorEntity):
         self.pid_power = 0
         self.pid_power_set = 0
         self.logger = _LOGGER
+        self.control_enabled = True
 
     async def initialize(self):
         """Get setup information, find sensors."""
         self.setup = await self.comm.setup_update(self)
         self.data = await self.comm.data_update(self)
-        await self.init_sensors()
+        await self.comm.state_update(self)
+        await self.init_entities()
         dr.async_get(self._hass).async_get_or_create(
             config_entry_id=self._entry.entry_id,
             identifiers={(DOMAIN, self.serial_number)},
@@ -77,7 +79,7 @@ class MpyDevice(CoordinatorEntity):
         """Return the ip address of the device."""
         return self._ip
 
-    async def init_sensors(self):
+    async def init_entities(self):
         """Take sensors from data and init HA sensors."""
         data_keys = list(self.data.keys())
         defined_keys = list(SENSOR_TYPES.keys())
@@ -124,16 +126,17 @@ class MpyDevice(CoordinatorEntity):
                     self.binary_sensors.append(
                         MpvBinSensor(self, key, SENSOR_TYPES[key])
                     )
-                elif SENSOR_TYPES[key][2] in ["switch"]:
+                elif SENSOR_TYPES[key][2] in ["switch"] and self.control_enabled:
                     self.switches.append(MpvSwitch(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["control"]:
-                    self.controls.append(
-                        MpvPowerControl3500(self, key, SENSOR_TYPES[key])
-                    )
-                    # PID controller is turned on, control power by itself
-                    self.switches.append(
-                        MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
-                    )
+                    if self.control_enabled:
+                        self.controls.append(
+                            MpvPowerControl3500(self, key, SENSOR_TYPES[key])
+                        )
+                        # PID controller is turned on, control power by itself
+                        self.switches.append(
+                            MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
+                        )
                     # Setup as sensor, too
                     self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
@@ -145,5 +148,9 @@ class MpyDevice(CoordinatorEntity):
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
-        if await self.comm.state_update(self):
-            self.state = int(self.state_dict["State"])
+        if self.control_enabled:
+            if await self.comm.state_update(self):
+                if "State" in self.state_dict:
+                    self.state = int(self.state_dict["State"])
+                else:
+                    self.state = -1

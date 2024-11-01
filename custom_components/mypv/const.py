@@ -20,6 +20,7 @@ CONF_HOSTS = "conf_hosts"
 HOST_LIST = "host_list"
 MIN_IP = "min_ip"
 MAX_IP = "max_ip"
+DEV_IP = "dev_ip"
 
 SENSOR_TYPES = {
     "device": ["Device", None, "text"],

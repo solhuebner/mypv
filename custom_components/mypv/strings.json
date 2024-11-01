@@ -4,6 +4,7 @@
     "step": {
       "user": {
         "data": {
+          "dev_ip": "[%key:common::config_flow::data::dev_ip%]",
           "min_ip": "[%key:common::config_flow::data::min_ip%]",
           "max_ip": "[%key:common::config_flow::data::max_ip%]"
         }
@@ -22,19 +23,20 @@
     "step": {
       "init": {
         "data": {
-          "min_ip": "[%key:common::config_flow::data::min_ip%]",
-          "max_ip": "[%key:common::config_flow::data::max_ip%]"
+          "dev_ip": "[%key:common::options_flow::data::dev_ip%]",
+          "min_ip": "[%key:common::options_flow::data::min_ip%]",
+          "max_ip": "[%key:common::options_flow::data::max_ip%]"
         },
         "title": "Setup communication"
       }
     },
     "error": {
-      "could_not_connect": "[%key:common::config_flow::error::min_ip%]",
-      "host_exists": "[%key:common::config_flow::error::min_ip%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "could_not_connect": "[%key:common::options_flow::error::dev_ip%]",
+      "host_exists": "[%key:common::options_flow::error::dev_ip%]",
+      "unknown": "[%key:common::options_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::options_flow::abort::already_configured_device%]"
     }
-  },
+  }
 }

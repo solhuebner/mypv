@@ -4,9 +4,30 @@
     "step": {
       "user": {
         "data": {
+          "dev_ip": "IP-Adresse für myPV Gerät",
           "min_ip": "Untere Grenze des IP-Suchbereichs für myPV Geräte",
           "max_ip": "Obere Grenze des IP-Suchbereichs für myPV Geräte"
         }
+      }
+    },
+    "error": {
+      "could_not_connect": "Kein myPV-Gerät im angegebenen Adressbereich gefunden",
+      "host_exists": "Gefundene Geräte wurden bereits konfiguriert",
+      "unknown": "Unbekannter Fehler aufgetreten"
+    },
+    "abort": {
+      "host_exists": "Gefundene Geräte wurden bereits konfiguriert"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "dev_ip": "IP-Adresse für myPV Gerät",
+          "min_ip": "Untere Grenze des IP-Suchbereichs für myPV Geräte",
+          "max_ip": "Obere Grenze des IP-Suchbereichs für myPV Geräte"
+        },
+        "title": "Kommunikationseinstellung"
       }
     },
     "error": {

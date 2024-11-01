@@ -11,18 +11,6 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from .communicate import MypvCommunicator
 from .const import COMM_HUB, DOMAIN, MAX_IP, MIN_IP
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(MIN_IP): cv.string,
-                vol.Required(MAX_IP): cv.string,
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
-
 # List of platforms to support. There should be a matching .py file for each
 PLATFORMS: list[str] = [
     "binary_sensor",
