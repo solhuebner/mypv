@@ -12,7 +12,7 @@ from .const import COMM_HUB, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PID_POWER_ON_VALUE = 3500
+PID_POWER_ON_VALUE = 3000
 PID_POWER_OFF_VALUE = 0
 
 
@@ -118,7 +118,7 @@ class MpvPidControlSwitch(CoordinatorEntity, SwitchEntity):
         if self.device.pid_power_set == 1:
             # waiting for http_control_mode
             return True
-        if self.device.pid_power_set in range(2,4):
+        if self.device.pid_power_set in range(2, 4):
             # waiting for power to be set by PID
             self.device.pid_power_set += 1
             return True
@@ -140,7 +140,7 @@ class MpvPidControlSwitch(CoordinatorEntity, SwitchEntity):
         while not http_control_mode:
             await self.comm.set_pid_power(self.device, PID_POWER_ON_VALUE)
             await asyncio.sleep(1)
-            http_control_mode = self.device.state_dict['Control State'] == "HTTP"
+            http_control_mode = self.device.state_dict["Control State"] == "HTTP"
         await self.comm.set_pid_power(self.device, PID_POWER_ON_VALUE)
         await asyncio.sleep(1)
         self.device.pid_power_set = 2

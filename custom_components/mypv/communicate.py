@@ -1,4 +1,4 @@
-"""Provides the ELWA pyPV DataUpdateCoordinator."""
+"""Provides the myPV DataUpdateCoordinator."""
 
 import asyncio
 from datetime import timedelta

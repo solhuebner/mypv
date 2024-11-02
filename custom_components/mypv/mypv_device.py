@@ -8,7 +8,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .binary_sensor import MpvBinSensor
 from .const import DOMAIN, SENSOR_TYPES
-from .number import MpvPowerControl3500
+from .number import MpvPidPowerControl, MpvPowerControl
 from .sensor import MpvDevStatSensor, MpvSensor, MpvUpdateSensor
 from .switch import MpvPidControlSwitch, MpvSwitch
 
@@ -131,12 +131,15 @@ class MpyDevice(CoordinatorEntity):
                 elif SENSOR_TYPES[key][2] in ["control"]:
                     if self.control_enabled:
                         self.controls.append(
-                            MpvPowerControl3500(self, key, SENSOR_TYPES[key])
+                            MpvPowerControl(self, key, SENSOR_TYPES[key])
                         )
-                        # PID controller is turned on, control power by itself
-                        self.switches.append(
-                            MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
+                        self.controls.append(
+                            MpvPidPowerControl(self, key, SENSOR_TYPES[key])
                         )
+                        # # PID controller is turned on, control power by itself
+                        # self.switches.append(
+                        #     MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
+                        # )
                     # Setup as sensor, too
                     self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
@@ -154,4 +157,3 @@ class MpyDevice(CoordinatorEntity):
                     self.state = int(self.state_dict["State"])
                 else:
                     self.state = -1
-
