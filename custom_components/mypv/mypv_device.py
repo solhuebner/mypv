@@ -32,6 +32,8 @@ class MpyDevice(CoordinatorEntity):
         self.serial_number = info["sn"]
         self.fw = info["fwversion"]
         self.model = info["device"]
+        if "acthor9s" in info:
+            self.model += "9s"
         self._name = f"{self.model} {self._id}"
         self.state = 0
         self.setup = []
