@@ -83,18 +83,24 @@ class MpyDevice(CoordinatorEntity):
 
     async def init_entities(self):
         """Take sensors from data and init HA sensors."""
+
+        def remove_data_key(key):
+            """Safely remove key from data_keys."""
+            if key in data_keys:
+                data_keys.remove(key)
+
         data_keys = list(self.data.keys())
         defined_keys = list(SENSOR_TYPES.keys())
-        data_keys.remove("device")
-        data_keys.remove("fwversion")
-        data_keys.remove("psversion")
-        data_keys.remove("coversion")
-        data_keys.remove("fsetup")
-        data_keys.remove("date")
-        data_keys.remove("loctime")
-        data_keys.remove("unixtime")
-        data_keys.remove("screen_mode_flag")
-        data_keys.remove("wifi_list")
+        remove_data_key("device")
+        remove_data_key("fwversion")
+        remove_data_key("psversion")
+        remove_data_key("coversion")
+        remove_data_key("fsetup")
+        remove_data_key("date")
+        remove_data_key("loctime")
+        remove_data_key("unixtime")
+        remove_data_key("screen_mode_flag")
+        remove_data_key("wifi_list")
         self.sensors.append(
             MpvDevStatSensor(self, "control_state", ["Control state", None, "sensor"])
         )
