@@ -200,4 +200,5 @@ class MypvCommunicator(DataUpdateCoordinator):
         for line in resp_lines:
             line = line.replace(">", "").split("&")[0].strip()
             parts = line.split("=")
-            device.state_dict[parts[0]] = parts[1].split()[0]
+            device.state_dict[parts[0]] = parts[1].split()[0].replace(",","")
+
