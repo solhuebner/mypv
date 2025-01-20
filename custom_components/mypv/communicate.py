@@ -151,7 +151,7 @@ class MypvCommunicator(DataUpdateCoordinator):
                 response_text = await self.do_get_request(url)
                 self.get_state_dict(response_text, device)
             except Exception as err_msg:  # noqa: BLE001
-                self.logger.info(f"Error during setup control update: {err_msg}")  # noqa: G004
+                self.logger.warning(f"Error during setup control update: {err_msg}")  # noqa: G004
                 device.control_enabled = False
                 return False
             else:
@@ -166,7 +166,7 @@ class MypvCommunicator(DataUpdateCoordinator):
             self.get_state_dict(response_text, device)
             return True  # noqa: TRY300
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during set power command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during set power command: {err_msg}")  # noqa: G004
             return False
 
     async def set_pid_power(self, device, act_pow: int):
@@ -176,7 +176,7 @@ class MypvCommunicator(DataUpdateCoordinator):
             response_text = await self.do_get_request(url)
             self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during set pid power command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during set pid power command: {err_msg}")  # noqa: G004
             return False
         else:
             return True
@@ -188,7 +188,7 @@ class MypvCommunicator(DataUpdateCoordinator):
             response_text = await self.do_get_request(url)
             self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during boost command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during boost command: {err_msg}")  # noqa: G004
             return False
         else:
             return True
@@ -200,5 +200,4 @@ class MypvCommunicator(DataUpdateCoordinator):
         for line in resp_lines:
             line = line.replace(">", "").split("&")[0].strip()
             parts = line.split("=")
-            device.state_dict[parts[0]] = parts[1].split()[0].replace(",","")
-
+            device.state_dict[parts[0]] = parts[1].split()[0].replace(",", "")
