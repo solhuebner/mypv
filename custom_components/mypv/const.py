@@ -55,7 +55,7 @@ SENSOR_TYPES = {
     "temp2": ["Temperatur 2", UnitOfTemperature.CELSIUS, "sensor"],
     "temp3": ["Temperatur 3", UnitOfTemperature.CELSIUS, "sensor"],
     "temp4": ["Temperatur 4", UnitOfTemperature.CELSIUS, "sensor"],
-    "boostactive": ["Boost activate", None, "button"],
+    "boostactive": ["Start Boost", None, "button"],
     "legboostnext": ["legboostnext", None, "sensor"],
     "date": ["Date", None, "sensor"],
     "loctime": ["Loctime", None, "sensor"],
@@ -149,8 +149,8 @@ SENSOR_TYPES = {
 SETUP_TYPES = {
     # "mainmode": ["Operating Mode", None, "", "sensor"],
     # "mode9s": ["Operating Mode Acthor 9", None, "", "sensor"],
-    "devmode": ["Device Enabled", None, "switch"],
-    "bstmode": ["Boost Mode Enabled", None, "switch"],
+    "devmode": ["Enable Device", None, "switch"],
+    "bstmode": ["Enable Boost Mode", None, "switch"],
     "ww1target": ["Target Temperature", None, "number"],
     "ww1boost": ["Boost Min Temperature", None, "number"],
 }
