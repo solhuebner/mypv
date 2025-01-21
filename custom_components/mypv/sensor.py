@@ -105,7 +105,7 @@ class MpvSensor(CoordinatorEntity):
             return "mdi:ip-network"
         if self._name.split()[-1] == "Version":
             return "mdi:numeric"
-        if self._name.split()[-1] == "Überschuss":
+        if self._name.split()[-1] == "Surplus":
             return "mdi:octagram-plus-outline"
         return None
 
