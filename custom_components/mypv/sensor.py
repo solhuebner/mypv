@@ -103,7 +103,7 @@ class MpvSensor(CoordinatorEntity):
         """Return icon."""
         if self._name in ["IP", "DNS", "Gateway", "Subnet mask"]:
             return "mdi:ip-network"
-        if self._name.split()[-1] == "version":
+        if self._name.split()[-1] == "Version":
             return "mdi:numeric"
         if self._name.split()[-1] == "Überschuss":
             return "mdi:octagram-plus-outline"

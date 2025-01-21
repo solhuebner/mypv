@@ -37,6 +37,7 @@ The myPV custom integration works locally in the home network utilizing the http
 This will turn on the heater for a predefined time period. This period has to been setup via web or cloud setup, as it is not supported by the myPV api. However, if the power value (usually the surplus of collected solar power) is set by an automation repeatedly within that period, a continuous control can be achieved.
 - In the same way, an upper power bound for the device's internal PID controller can be given. The internal PID controller uses the same time period as the external control described above.
 - In order to enable both control entities, the control type has to be set to "html" via web or cloud setup. Otherwise, only sensor data points will be exposed as Home Assistant entities.
+The Boost mode, if enabled, works on a weekly schedule to maintain a given minimum temperature. It can be started manually by a button press (if enabled).
 
 ## Credits
 

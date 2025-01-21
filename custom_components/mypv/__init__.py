@@ -14,6 +14,7 @@ from .const import COMM_HUB, DOMAIN, MAX_IP, MIN_IP
 # List of platforms to support. There should be a matching .py file for each
 PLATFORMS: list[str] = [
     "binary_sensor",
+    "button",
     "number",
     "sensor",
     "switch",

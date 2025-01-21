@@ -7,12 +7,11 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .binary_sensor import MpvBinSensor
-from .const import DOMAIN, SENSOR_TYPES
-from .number import MpvPidPowerControl, MpvPowerControl
+from .button import MpvBoostButton
+from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
+from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl
 from .sensor import MpvDevStatSensor, MpvSensor, MpvUpdateSensor
-from .switch import MpvPidControlSwitch, MpvSwitch
-
-# from .text import MpvTxtSensor
+from .switch import MpvSetupSwitch
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +40,7 @@ class MpyDevice(CoordinatorEntity):
         self.sensors = []
         self.binary_sensors = []
         self.controls = []
+        self.buttons = []
         self.switches = []
         self.text_sensors = []
         self.state_dict = {}
@@ -90,21 +90,24 @@ class MpyDevice(CoordinatorEntity):
                 data_keys.remove(key)
 
         data_keys = list(self.data.keys())
-        defined_keys = list(SENSOR_TYPES.keys())
+        defined_data_keys = list(SENSOR_TYPES.keys())
+        setup_keys = list(self.setup.keys())
+        defined_setup_keys = list(SETUP_TYPES.keys())
         remove_data_key("device")
-        remove_data_key("fwversion")
-        remove_data_key("psversion")
-        remove_data_key("coversion")
+        remove_data_key("fwversionlatest")
+        remove_data_key("psversionlatest")
+        remove_data_key("p9sversionlatest")
         remove_data_key("fsetup")
         remove_data_key("date")
         remove_data_key("loctime")
         remove_data_key("unixtime")
         remove_data_key("screen_mode_flag")
         remove_data_key("wifi_list")
+        remove_data_key("freq")
         self.sensors.append(
             MpvDevStatSensor(self, "control_state", ["Control state", None, "sensor"])
         )
-        for key in defined_keys:
+        for key in defined_data_keys:
             # use only keys included in data with valid values
             if (
                 SENSOR_TYPES[key][2]
@@ -115,6 +118,7 @@ class MpyDevice(CoordinatorEntity):
                     "ip_string",
                     "upd_stat",
                     "dev_stat",
+                    "button",
                     "switch",
                     "control",
                     "text",
@@ -134,8 +138,8 @@ class MpyDevice(CoordinatorEntity):
                     self.binary_sensors.append(
                         MpvBinSensor(self, key, SENSOR_TYPES[key])
                     )
-                elif SENSOR_TYPES[key][2] in ["switch"] and self.control_enabled:
-                    self.switches.append(MpvSwitch(self, key, SENSOR_TYPES[key]))
+                elif SENSOR_TYPES[key][2] in ["button"] and self.control_enabled:
+                    self.buttons.append(MpvBoostButton(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["control"]:
                     if self.control_enabled:
                         self.controls.append(
@@ -144,21 +148,47 @@ class MpyDevice(CoordinatorEntity):
                         self.controls.append(
                             MpvPidPowerControl(self, key, SENSOR_TYPES[key])
                         )
-                        # # PID controller is turned on, control power by itself
-                        # self.switches.append(
-                        #     MpvPidControlSwitch(self, key, SENSOR_TYPES[key])
-                        # )
                     # Setup as sensor, too
                     self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
                 # Sensor value might not be available at statrtup
                 self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
+        for key in defined_setup_keys:
+            # use only keys included in setup with valid values
+            if (
+                SETUP_TYPES[key][2]
+                in [
+                    "binary_sensor",
+                    "button",
+                    "number",
+                    "sensor",
+                    "switch",
+                    "control",
+                ]
+                and key in setup_keys
+                and self.setup[key] is not None
+                and self.setup[key] != "null"
+            ):
+                self.logger.info(f"Setup Key: {key}: {self.setup[key]}")  # noqa: G004
+                if SETUP_TYPES[key][2] in ["sensor", "text", "ip_string"]:
+                    self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
+                elif SETUP_TYPES[key][2] in ["binary_sensor"]:
+                    self.binary_sensors.append(
+                        MpvBinSensor(self, key, SETUP_TYPES[key])
+                    )
+                elif SETUP_TYPES[key][2] in ["switch"]:
+                    self.switches.append(MpvSetupSwitch(self, key, SETUP_TYPES[key]))
+                elif SETUP_TYPES[key][2] in ["number"]:
+                    self.controls.append(MpvSetupControl(self, key, SETUP_TYPES[key]))
 
     async def update(self):
         """Update all sensors."""
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
+        resp = await self.comm.setup_update(self)
+        if resp:
+            self.setup = resp
         if self.control_enabled:
             if await self.comm.state_update(self):
                 if "State" in self.state_dict:

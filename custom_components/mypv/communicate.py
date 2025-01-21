@@ -151,12 +151,23 @@ class MypvCommunicator(DataUpdateCoordinator):
                 response_text = await self.do_get_request(url)
                 self.get_state_dict(response_text, device)
             except Exception as err_msg:  # noqa: BLE001
-                self.logger.info(f"Error during setup control update: {err_msg}")  # noqa: G004
+                self.logger.warning(f"Error during setup control update: {err_msg}")  # noqa: G004
                 device.control_enabled = False
                 return False
             else:
                 return True
         return False
+
+    async def set_number(self, device, key, act_val: int):
+        """Set heating temperature."""
+        try:
+            url = f"http://{device.ip}/setup.jsn?{key}={act_val}"
+            response_text = await self.do_get_request(url)
+            self.get_state_dict(response_text, device)
+            return True  # noqa: TRY300
+        except Exception as err_msg:  # noqa: BLE001
+            self.logger.warning(f"Error during set power command: {err_msg}")  # noqa: G004
+            return False
 
     async def set_power(self, device, act_pow: int):
         """Set heater power."""
@@ -166,7 +177,7 @@ class MypvCommunicator(DataUpdateCoordinator):
             self.get_state_dict(response_text, device)
             return True  # noqa: TRY300
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during set power command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during set power command: {err_msg}")  # noqa: G004
             return False
 
     async def set_pid_power(self, device, act_pow: int):
@@ -176,19 +187,31 @@ class MypvCommunicator(DataUpdateCoordinator):
             response_text = await self.do_get_request(url)
             self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during set pid power command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during set pid power command: {err_msg}")  # noqa: G004
             return False
         else:
             return True
 
-    async def switch_boost(self, device, state: bool):
+    async def switch(self, device, key, state: bool):
         """Set heater power with local pid control."""
         try:
-            url = f"http://{device.ip}/control.html?boost={int(state)}"
+            url = f"http://{device.ip}/setup.jsn?{key}={int(state)}"
             response_text = await self.do_get_request(url)
             self.get_state_dict(response_text, device)
         except Exception as err_msg:  # noqa: BLE001
-            self.logger.info(f"Error during boost command: {err_msg}")  # noqa: G004
+            self.logger.warning(f"Error during boost command: {err_msg}")  # noqa: G004
+            return False
+        else:
+            return True
+
+    async def activate_boost(self, device):
+        """Set heater power with local pid control."""
+        try:
+            url = f"http://{device.ip}/control.html?boost=1"
+            response_text = await self.do_get_request(url)
+            self.get_state_dict(response_text, device)
+        except Exception as err_msg:  # noqa: BLE001
+            self.logger.warning(f"Error during boost command: {err_msg}")  # noqa: G004
             return False
         else:
             return True
@@ -196,8 +219,9 @@ class MypvCommunicator(DataUpdateCoordinator):
     def get_state_dict(self, text: str, device) -> None:
         """Convert lines to state dict."""
 
-        resp_lines = text.split("\n")[1].split("<br")[:10]
+        resp_lines = text.split("<br>")
         for line in resp_lines:
-            line = line.replace(">", "").split("&")[0].strip()
-            parts = line.split("=")
-            device.state_dict[parts[0]] = parts[1].split()[0]
+            if len(line) > 4 and not line.startswith("<"):
+                parts = line.split("=")
+                if len(parts) > 1:
+                    device.state_dict[parts[0]] = parts[1].split()[0].replace(",", "")
