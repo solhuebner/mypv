@@ -10,8 +10,8 @@ from .binary_sensor import MpvBinSensor
 from .button import MpvBoostButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
 from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl
-from .sensor import MpvDevStatSensor, MpvSensor, MpvUpdateSensor
-from .switch import MpvSetupSwitch
+from .sensor import MpvDevStatSensor, MpvEnergySensor, MpvSensor, MpvUpdateSensor
+from .switch import MpvHttpSwitch, MpvSetupSwitch
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -149,7 +149,12 @@ class MpyDevice(CoordinatorEntity):
                             MpvPidPowerControl(self, key, SENSOR_TYPES[key])
                         )
                     # Setup as sensor, too
-                    self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
+                    self.sensors.append(
+                        MpvSensor(self, key, SENSOR_TYPES[key])
+                    )  # power
+                    self.sensors.append(
+                        MpvEnergySensor(self, f"int_{key}", SENSOR_TYPES[f"int_{key}"])
+                    )  # energy
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
                 # Sensor value might not be available at statrtup
                 self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
@@ -180,6 +185,8 @@ class MpyDevice(CoordinatorEntity):
                     self.switches.append(MpvSetupSwitch(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["number"]:
                     self.controls.append(MpvSetupControl(self, key, SETUP_TYPES[key]))
+        self.switches.append(MpvHttpSwitch(self, "ctrl"))
+        self.update()
 
     async def update(self):
         """Update all sensors."""

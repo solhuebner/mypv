@@ -9,7 +9,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .communicate import MypvCommunicator
-from .const import COMM_HUB, DOMAIN, MAX_IP, MIN_IP
+from .const import COMM_HUB, DOMAIN
 
 # List of platforms to support. There should be a matching .py file for each
 PLATFORMS: list[str] = [

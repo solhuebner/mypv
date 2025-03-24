@@ -5,6 +5,7 @@ from datetime import timedelta
 from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
+    UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
     UnitOfTemperature,
@@ -31,7 +32,11 @@ SENSOR_TYPES = {
     "screen_mode_flag": ["Screen Mode", None, "binary_sensor"],
     "status": ["Status", None, "dev_stat"],
     "power": ["Power", UnitOfPower.WATT, "control"],
+    "power_ac9": ["Power AC9", UnitOfPower.WATT, "control"],
+    "power_ac9s": ["Power AC9s", UnitOfPower.WATT, "control"],
     "power_elwa2": ["Power ELWA-2", UnitOfPower.WATT, "control"],
+    "int_power": ["Energy Consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
+    "int_power_elwa2": ["Energy Consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
     "power_solar": ["Power Solar ELWA-2", UnitOfPower.WATT, "sensor"],
     "power_grid": ["Power Grid ELWA-2", UnitOfPower.WATT, "sensor"],
     "boostpower": ["Boost Power", UnitOfPower.WATT, "sensor"],
@@ -153,4 +158,5 @@ SETUP_TYPES = {
     "bstmode": ["Enable Boost Mode", None, "switch"],
     "ww1target": ["Target Temperature", None, "number"],
     "ww1boost": ["Boost Min Temperature", None, "number"],
+    "ctrl": ["Control Type", None, "sensor"],
 }

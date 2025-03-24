@@ -13,7 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import CONF_HOSTS, DOMAIN, MAX_IP, MIN_IP
+from .const import CONF_HOSTS, DOMAIN, MIN_TIME_BETWEEN_UPDATES
 from .mypv_device import MpyDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,14 +31,12 @@ def get_own_ip(def_ip):
 async def detect_mypv(ip_str: str) -> list[str]:
     """Detect myPV devices by udp broadcast, return list of ips."""
 
-    timeout_time = 10
+    timeout_time = 30
     time_out = time.time() + timeout_time
     mypv_detect_port = 16124
     detected_ips = []
-    own_ip = get_own_ip(ip_str)
-
     ip_parts = ip_str.split(".")
-    udp_ip = "255.255.255.255"  # f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}.0"
+    udp_ip = f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}.255"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.settimeout(timeout_time)
@@ -66,11 +64,10 @@ class MypvCommunicator(DataUpdateCoordinator):
         self._info = None
         self._setup = None
         self._next_update = 0
-        update_interval = timedelta(seconds=10)
+        update_interval = MIN_TIME_BETWEEN_UPDATES
         self.logger = _LOGGER
         self.devices = []
         self.hass = hass
-
         super().__init__(
             hass,
             _LOGGER,
@@ -81,6 +78,7 @@ class MypvCommunicator(DataUpdateCoordinator):
     async def initialize(self):
         """Do the async stuff."""
 
+        detected_ips = await detect_mypv(self.hosts[0])
         for ip_str in self.hosts:
             try:
                 info_data = await self.check_ip(ip_str)
@@ -178,6 +176,17 @@ class MypvCommunicator(DataUpdateCoordinator):
             return True  # noqa: TRY300
         except Exception as err_msg:  # noqa: BLE001
             self.logger.warning(f"Error during set power command: {err_msg}")  # noqa: G004
+            return False
+
+    async def set_control_mode(self, device, act_mode: int):
+        """Set power control mode, e.g. html."""
+        try:
+            url = f"http://{device.ip}/setup.jsn?ctrl={act_mode}"
+            response_text = await self.do_get_request(url)
+            # self.get_state_dict(response_text, device)
+            return True  # noqa: TRY300
+        except Exception as err_msg:  # noqa: BLE001
+            self.logger.warning(f"Error during set control mode command: {err_msg}")  # noqa: G004
             return False
 
     async def set_pid_power(self, device, act_pow: int):

@@ -1,11 +1,13 @@
 """Sensors of myPV integration."""
 
+from datetime import datetime
 import logging
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
+    UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
     UnitOfTemperature,
@@ -89,6 +91,8 @@ class MpvSensor(CoordinatorEntity):
             return SensorDeviceClass.VOLTAGE
         if self._unit_of_measurement == UnitOfPower.WATT:
             return SensorDeviceClass.POWER
+        if self._unit_of_measurement == UnitOfEnergy.KILO_WATT_HOUR:
+            return SensorDeviceClass.ENERGY
         if self._unit_of_measurement == UnitOfFrequency.HERTZ:
             return SensorDeviceClass.FREQUENCY
         return SensorDeviceClass.ENUM
@@ -212,3 +216,40 @@ class MpvDevStatSensor(MpvSensor):
         except Exception as err_msg:
             pass
         return DEVICE_STATE[self._last_value]
+
+
+class MpvEnergySensor(MpvSensor):
+    """Return energy state by integrating power consumption."""
+
+    def __init__(self, device, key, info) -> None:
+        """Initialize the sensor."""
+        super().__init__(device, key, info)
+        self._last_value = 0
+
+    @property
+    def icon(self):
+        """Return icon."""
+        return "mdi:meter-electric"
+
+    @property
+    def state(self):
+        """Return the state of the device."""
+
+        try:
+            last_time = (
+                self.hass.data["entity_registry"]
+                .entities.data["sensor.energy_consumption"]
+                .modified_at
+            )
+            dt = (datetime.now(last_time.tzinfo) - last_time).seconds + (
+                datetime.now(last_time.tzinfo) - last_time
+            ).microseconds / 1000000
+            # print(f"Timediff = {dt}")
+            p_val = self.device.data[self._key.replace("int_", "")]
+            state = self._last_value + p_val / 1000 * dt / 3600
+        except Exception as err_msg:
+            state = self._last_value
+        if state is None:
+            return state
+        self._last_value = state
+        return round(state, 2)
