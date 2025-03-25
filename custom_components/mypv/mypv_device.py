@@ -20,7 +20,7 @@ class MpyDevice(CoordinatorEntity):
     """Class definition of an myPV device."""
 
     def __init__(self, comm, ip, info) -> None:
-        """Initialize the sensor."""
+        """Initialize the device."""
         super().__init__(comm)
         self._hass: HomeAssistant = comm.hass
         self._entry = comm.config_entry
@@ -152,9 +152,9 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(
                         MpvSensor(self, key, SENSOR_TYPES[key])
                     )  # power
-                    self.sensors.append(
-                        MpvEnergySensor(self, f"int_{key}", SENSOR_TYPES[f"int_{key}"])
-                    )  # energy
+                    # self.sensors.append(
+                    #     MpvEnergySensor(self, f"int_{key}", SENSOR_TYPES[f"int_{key}"])
+                    # )  # energy
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
                 # Sensor value might not be available at statrtup
                 self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
