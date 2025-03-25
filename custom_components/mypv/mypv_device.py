@@ -9,7 +9,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .binary_sensor import MpvBinSensor
 from .button import MpvBoostButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
-from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl
+from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvToutControl
 from .sensor import MpvDevStatSensor, MpvEnergySensor, MpvSensor, MpvUpdateSensor
 from .switch import MpvHttpSwitch, MpvSetupSwitch
 
@@ -32,7 +32,7 @@ class MpyDevice(CoordinatorEntity):
         self.fw = info["fwversion"]
         self.model = info["device"]
         if "acthor9s" in info:
-            self.model += "9s"
+            self.model += " 9s"
         self._name = f"{self.model} {self._id}"
         self.state = 0
         self.setup = []
@@ -186,6 +186,7 @@ class MpyDevice(CoordinatorEntity):
                 elif SETUP_TYPES[key][2] in ["number"]:
                     self.controls.append(MpvSetupControl(self, key, SETUP_TYPES[key]))
         self.switches.append(MpvHttpSwitch(self, "ctrl"))
+        self.controls.append(MpvToutControl(self, "tout"))
         self.update()
 
     async def update(self):

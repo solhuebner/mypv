@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from homeassistant.components.number import NumberDeviceClass, NumberEntity
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -27,7 +27,7 @@ class MpvPowerControl(CoordinatorEntity, NumberEntity):
     _attr_has_entity_name = True
     _attr_device_class = NumberDeviceClass.POWER
     _attr_native_min_value = 0
-    _attr_native_step = 500
+    _attr_native_step = 100
 
     def __init__(self, device, key, info) -> None:
         """Initialize the control."""
@@ -116,7 +116,7 @@ class MpvSetupControl(CoordinatorEntity, NumberEntity):
     _attr_has_entity_name = True
     _attr_device_class = NumberDeviceClass.TEMPERATURE
     _attr_native_min_value = 40
-    _attr_native_max_value = 70
+    _attr_native_max_value = 80
     _attr_native_step = 1
 
     def __init__(self, device, key, info) -> None:
@@ -166,3 +166,58 @@ class MpvSetupControl(CoordinatorEntity, NumberEntity):
         """Set the new value."""
         self._attr_native_value = value
         await self.comm.set_number(self.device, self._key, int(value * 10))
+
+
+class MpvToutControl(CoordinatorEntity, NumberEntity):
+    """Representation of myPV setup value control."""
+
+    _attr_has_entity_name = True
+    _attr_device_class = NumberDeviceClass.DURATION
+    _attr_native_min_value = 10
+    _attr_native_max_value = 180
+    _attr_native_step = 10
+
+    def __init__(self, device, key) -> None:
+        """Initialize the control."""
+        super().__init__(device.comm)
+        self.device = device
+        self.comm = device.comm
+        self._key = key
+        self._name = "Control Value Timeout"
+        self._unit_of_measurement = UnitOfTime.SECONDS
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def unique_id(self):
+        """Return unique id based on device serial and variable."""
+        return f"{self.device.serial_number}_{self._name}"
+
+    @property
+    def device_info(self):
+        """Return information about the device."""
+        return {
+            "identifiers": {(DOMAIN, self.device.serial_number)},
+            "name": self.device.name,
+            "manufacturer": "myPV",
+            "model": self.device.model,
+        }
+
+    @property
+    def icon(self):
+        """Return icon."""
+        return "mdi:camera-timer"
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._attr_native_value = self.device.setup[self._key]
+        self.async_write_ha_state()
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the new value."""
+        self._attr_native_value = value
+        await self.comm.set_number(self.device, self._key, int(value))
