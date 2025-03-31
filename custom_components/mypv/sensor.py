@@ -111,6 +111,12 @@ class MpvSensor(CoordinatorEntity):
             return "mdi:numeric"
         if self._name.split()[-1] == "Surplus":
             return "mdi:octagram-plus-outline"
+        if self._name in ["Screen mode", "Power supply state"]:
+            return "mdi:state-machine"
+        if self._name in ["Fan speed"]:
+            return "mdi:fan"
+        if self._name in ["Control type"]:
+            return "mdi:format-list-bulleted-type"
         return None
 
     @property

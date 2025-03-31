@@ -101,7 +101,6 @@ class MpyDevice(CoordinatorEntity):
         remove_data_key("date")
         remove_data_key("loctime")
         remove_data_key("unixtime")
-        remove_data_key("screen_mode_flag")
         remove_data_key("wifi_list")
         remove_data_key("freq")
         self.sensors.append(
