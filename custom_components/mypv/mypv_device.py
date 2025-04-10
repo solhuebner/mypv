@@ -186,7 +186,7 @@ class MpyDevice(CoordinatorEntity):
                     self.controls.append(MpvSetupControl(self, key, SETUP_TYPES[key]))
         self.switches.append(MpvHttpSwitch(self, "ctrl"))
         self.controls.append(MpvToutControl(self, "tout"))
-        self.update()
+        await self.update()
 
     async def update(self):
         """Update all sensors."""

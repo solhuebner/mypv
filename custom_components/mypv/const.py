@@ -159,5 +159,5 @@ SETUP_TYPES = {
     "bstmode": ["Enable Boost Mode", None, "switch"],
     "ww1target": ["Target Temperature", None, "number"],
     "ww1boost": ["Boost Min Temperature", None, "number"],
-    "ctrl": ["Control Type", None, "sensor"],
+    "ctrl": ["Control type", None, "sensor"],
 }

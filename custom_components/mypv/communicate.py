@@ -232,5 +232,5 @@ class MypvCommunicator(DataUpdateCoordinator):
         for line in resp_lines:
             if len(line) > 4 and not line.startswith("<"):
                 parts = line.split("=")
-                if len(parts) > 1:
+                if len(parts) > 2:
                     device.state_dict[parts[0]] = parts[1].split()[0].replace(",", "")
