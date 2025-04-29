@@ -11,12 +11,12 @@
       }
     },
     "error": {
-      "could_not_connect": "No myPV device found in given ip range",
-      "host_exists": "Found hosts are already configured",
+      "could_not_connect": "No myPV device found with given ip address",
+      "host_exists": "Found host already configured",
       "unknown": "Unknown error"
     },
     "abort": {
-      "host_exists": "Found hosts are already configured"
+      "host_exists": "Found host already configured"
     }
   },
   "options": {
@@ -31,12 +31,13 @@
       }
     },
     "error": {
-      "could_not_connect": "No myPV device found in given ip range",
-      "host_exists": "Found hosts are already configured",
+      "could_not_connect": "No myPV device found with given ip address",
+      "host_exists": "Found host already configured",
       "unknown": "Unknown error"
     },
     "abort": {
-      "host_exists": "Found hosts are already configured"
+      "host_exists": "Found host already configured",
+      "options_updated": "Options updated"
     }
   }
 }

@@ -11,12 +11,12 @@
       }
     },
     "error": {
-      "could_not_connect": "Kein myPV-Gerät im angegebenen Adressbereich gefunden",
-      "host_exists": "Gefundene Geräte wurden bereits konfiguriert",
+      "could_not_connect": "Kein myPV-Gerät mit der angegebenen Adresse gefunden",
+      "host_exists": "Gefundenes Gerät wurde bereits konfiguriert",
       "unknown": "Unbekannter Fehler aufgetreten"
     },
     "abort": {
-      "host_exists": "Gefundene Geräte wurden bereits konfiguriert"
+      "host_exists": "Gefundenes Gerät wurde bereits konfiguriert"
     }
   },
   "options": {
@@ -31,12 +31,13 @@
       }
     },
     "error": {
-      "could_not_connect": "Kein myPV-Gerät im angegebenen Adressbereich gefunden",
-      "host_exists": "Gefundene Geräte wurden bereits konfiguriert",
+      "could_not_connect": "Kein myPV-Gerät mit der angegebenen Adresse gefunden",
+      "host_exists": "Gefundenes Gerät wurde bereits konfiguriert",
       "unknown": "Unbekannter Fehler aufgetreten"
     },
     "abort": {
-      "host_exists": "Gefundene Geräte wurden bereits konfiguriert"
+      "host_exists": "Gefundenes Gerät wurde bereits konfiguriert",
+      "options_updated": "Die Optionen wurden aktualisiert."
     }
   }
 }

@@ -81,6 +81,11 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None) -> FlowResult:
         """Handle the initial step."""
 
+        if user_input is None:
+            default_dev_ip = "192.168.178.100"
+        else:
+            default_dev_ip = user_input[DEV_IP]
+
         if user_input is not None:
             # min_ip = user_input[MIN_IP]
             # max_ip = user_input[MAX_IP]
@@ -93,6 +98,7 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if self._all_hosts_in_configuration_exist(ips_found):
                     self._errors[DEV_IP] = "host_exists"
                 else:
+                    await self.async_set_unique_id(f"mypv_{dev_ip}")
                     return self.async_create_entry(
                         title="myPV",
                         data={
@@ -104,15 +110,10 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
             else:
                 self._errors[DEV_IP] = "could_not_connect"
-        else:
-            user_input = {}
-            # user_input[MIN_IP] = "192.168.178.100"
-            # user_input[MAX_IP] = "192.168.178.110"
-            user_input[DEV_IP] = "192.168.178.100"
 
         setup_schema = vol.Schema(
             {
-                vol.Required(DEV_IP, default=user_input[DEV_IP]): str,
+                vol.Required(DEV_IP, default=default_dev_ip): str,
                 # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
                 # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
             }
@@ -138,47 +139,39 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
         """Manage the options."""
         self._errors = {}
         if user_input is None:
-            user_input = {}
-            # user_input[MIN_IP] = "192.168.178.100"
-            # user_input[MAX_IP] = "192.168.178.110"
-            user_input[DEV_IP] = "192.168.178.100"
-            opt_schema = vol.Schema(
-                {
-                    vol.Required(DEV_IP, default=user_input[DEV_IP]): str,
-                    # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
-                    # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
-                }
-            )
+            default_dev_ip = self.config_entry.data[DEV_IP]
         else:
+            default_dev_ip = user_input[DEV_IP]
+        opt_schema = vol.Schema(
+            {
+                vol.Required(DEV_IP, default=default_dev_ip): str,
+                # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
+                # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
+            }
+        )
+        if user_input is not None:
             # min_ip = user_input[MIN_IP]
             # max_ip = user_input[MAX_IP]
             dev_ip = user_input[DEV_IP]
-            opt_schema = vol.Schema(
-                {
-                    vol.Required(DEV_IP, default=user_input[DEV_IP]): str,
-                    # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
-                    # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
-                }
-            )
             can_connect, ips_found = await self.hass.async_add_executor_job(
                 self._check_host,
                 dev_ip,  # min_ip, max_ip
             )
+            conf_data = {
+                # MIN_IP: min_ip,
+                # MAX_IP: max_ip,
+                DEV_IP: dev_ip,
+                CONF_HOSTS: ips_found,
+            }
             if can_connect:
-                if self._all_hosts_in_configuration_exist(ips_found):
-                    self._errors[DEV_IP] = "host_exists"
-                else:
-                    conf_data = self.config_entry.data
-                    conf_data["dev_ip"].replace(conf_data["dev_ip"], dev_ip)
-                    conf_data["conf_hosts"].append(dev_ip)
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data=conf_data,
-                        options=self.config_entry.options,
-                    )
-                    return self.async_update_reload_and_abort(self.config_entry, data=conf_data)
-            else:
-                self._errors[DEV_IP] = "could_not_connect"
+                return self.async_update_reload_and_abort(
+                    self.config_entry,
+                    data=conf_data,
+                    title="myPV",
+                    reason="options_updated",
+                    reload_even_if_entry_is_unchanged=False,
+                )
+            self._errors[DEV_IP] = "could_not_connect"
 
         return self.async_show_form(
             step_id="init", data_schema=opt_schema, errors=self._errors

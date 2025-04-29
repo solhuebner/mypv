@@ -36,7 +36,8 @@
       "unknown": "[%key:common::options_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::options_flow::abort::already_configured_device%]"
+      "already_configured": "[%key:common::options_flow::abort::already_configured_device%]",
+      "options_updated": "[%key:common::options_flow::abort::options_updated%]"
     }
   }
 }
