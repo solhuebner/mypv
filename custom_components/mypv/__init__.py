@@ -1,5 +1,6 @@
 """Integration ELWA myPV."""
 
+from httpcore import TimeoutException
 import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
@@ -9,7 +10,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .communicate import MypvCommunicator
-from .const import COMM_HUB, DOMAIN
+from .const import COMM_HUB, DEV_IP, DOMAIN
 
 # List of platforms to support. There should be a matching .py file for each
 PLATFORMS: list[str] = [
@@ -38,21 +39,30 @@ async def async_setup(hass: HomeAssistant, config):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Load the saved entities."""
-    comm = MypvCommunicator(hass, entry)
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = comm
-    await comm.initialize()
 
-    await comm.async_refresh()
+    try:
+        comm = MypvCommunicator(hass, entry)
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = comm
+        await comm.initialize()
 
-    if not comm.last_update_success:
-        raise ConfigEntryNotReady
+        await comm.async_refresh()
 
-    hass.data[DOMAIN][entry.entry_id] = {
-        COMM_HUB: comm,
-    }
+        if not comm.last_update_success:
+            raise ConfigEntryNotReady(
+            f"Update of myPV device at {entry.data[DEV_IP]} failed"
+        )
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    return True
+        hass.data[DOMAIN][entry.entry_id] = {
+            COMM_HUB: comm,
+        }
+
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    except (TimeoutError, TimeoutException) as ex:
+        raise ConfigEntryNotReady(
+            f"Timeout while connecting to myPV device at {entry.data[DEV_IP]}"
+        ) from ex
+    else:
+        return True
 
 
 async def async_remove_config_entry_device(

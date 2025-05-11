@@ -149,7 +149,7 @@ class MypvCommunicator(DataUpdateCoordinator):
                 response_text = await self.do_get_request(url)
                 self.get_state_dict(response_text, device)
             except Exception as err_msg:  # noqa: BLE001
-                self.logger.warning(f"Error during setup control update: {err_msg}")  # noqa: G004
+                self.logger.warning(f"Error during control update: {err_msg}")  # noqa: G004
                 device.control_enabled = False
                 return False
             else:
