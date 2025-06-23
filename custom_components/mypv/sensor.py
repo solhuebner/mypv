@@ -32,6 +32,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 class MpvSensor(CoordinatorEntity):
     """Representation of myPV sensors."""
 
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
     def __init__(self, device, key, info) -> None:
         """Initialize the sensor."""
         super().__init__(device.comm)
