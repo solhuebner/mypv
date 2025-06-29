@@ -47,7 +47,7 @@ async def detect_mypv(ip_str: str) -> list[str]:
         try:
             data, addr = sock.recvfrom(1024)
             detected_ips.append(addr)
-            asyncio.sleep(0.02)
+            await asyncio.sleep(0.02)
         except TimeoutError:
             pass
     pass
@@ -97,9 +97,10 @@ class MypvCommunicator(DataUpdateCoordinator):
 
     async def do_get_request(self, url: str) -> str:
         """Perform asyncio get request."""
+        timeout = aiohttp.ClientTimeout(total=5)
         async with (
-            aiohttp.ClientSession() as session,
-            session.get(url, timeout=5) as resp,
+            aiohttp.ClientSession(timeout=timeout) as session,
+            session.get(url) as resp,
         ):
             return await resp.text()
 

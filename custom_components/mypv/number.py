@@ -27,7 +27,7 @@ class MpvPowerControl(CoordinatorEntity, NumberEntity):
     _attr_has_entity_name = True
     _attr_device_class = NumberDeviceClass.POWER
     _attr_native_min_value = 0
-    _attr_native_step = 100
+    _attr_native_step = 1
 
     def __init__(self, device, key, info) -> None:
         """Initialize the control."""

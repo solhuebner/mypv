@@ -1,10 +1,11 @@
 {
   "domain": "mypv",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "name": "myPV",
   "documentation": "https://github.com/dneprojects/mvpv",
   "config_flow": true,
   "dependencies": [],
+  "after_dependencies": ["network_connectivity"],
   "codeowners": ["@dneprojects"],
   "requirements": [],
   "iot_class": "local_polling"

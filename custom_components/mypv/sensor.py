@@ -1,9 +1,13 @@
 """Sensors of myPV integration."""
 
-from datetime import datetime
 import logging
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+from homeassistant.components.integration.sensor import IntegrationSensor, UnitOfTime
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
@@ -12,7 +16,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -29,10 +33,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         async_add_entities(device.sensors)
 
 
-class MpvSensor(CoordinatorEntity):
+class MpvSensor(CoordinatorEntity, SensorEntity):
     """Representation of myPV sensors."""
 
+    _attr_has_entity_name = True
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_should_poll = True
 
     def __init__(self, device, key, info) -> None:
         """Initialize the sensor."""
@@ -58,24 +64,7 @@ class MpvSensor(CoordinatorEntity):
     @property
     def state(self):
         """Return the state of the device."""
-        try:
-            state = self.device.data[self._key]
-            if self._type == "power_act":
-                relOut = int(self.comm.data["rel1_out"])
-                loadNom = int(self.comm.data["load_nom"])
-                state = (relOut * loadNom) + int(state)
-            self._last_value = state
-        except Exception as err_msg:
-            state = self._last_value
-        if state is None:
-            return state
-        if self._unit_of_measurement == UnitOfFrequency.HERTZ:
-            return state / 1000
-        if self._unit_of_measurement == UnitOfTemperature.CELSIUS:
-            return state / 10
-        if self._unit_of_measurement == UnitOfElectricCurrent.AMPERE:
-            return state / 10
-        return state
+        return self._last_value
 
     @property
     def unit_of_measurement(self):
@@ -136,6 +125,30 @@ class MpvSensor(CoordinatorEntity):
             "model": self.device.model,
         }
 
+    @callback
+    def _handle_coordinator_update(self):
+        """Handle updated data from the coordinator."""
+        try:
+            state = self.device.data[self._key]
+            if self._type == "power_act":
+                relOut = int(self.comm.data["rel1_out"])
+                loadNom = int(self.comm.data["load_nom"])
+                state = (relOut * loadNom) + int(state)
+        except Exception:  # noqa: BLE001
+            state = self._last_value
+        if state is None:
+            return state
+        if self._unit_of_measurement == UnitOfFrequency.HERTZ:
+            state = state / 1000
+        if self._unit_of_measurement == UnitOfTemperature.CELSIUS:
+            state = state / 10
+        if self._unit_of_measurement == UnitOfElectricCurrent.AMPERE:
+            state = state / 10
+        self._last_value = state
+        self._attr_native_value = state
+        self.async_write_ha_state()
+        return None
+
 
 class MpvUpdateSensor(MpvSensor):
     """Return update state from enum."""
@@ -171,7 +184,7 @@ class MpvUpdateSensor(MpvSensor):
         try:
             state = self.device.data[self._key]
             self._last_value = state
-        except Exception as err_msg:
+        except Exception:  # noqa: BLE001
             state = self._last_value
         return UPDATE_STATUS[state]
 
@@ -221,18 +234,33 @@ class MpvDevStatSensor(MpvSensor):
         try:
             state = self.device.state
             self._last_value = state + 1
-        except Exception as err_msg:
+        except Exception:  # noqa: BLE001
             pass
         return DEVICE_STATE[self._last_value]
 
 
-class MpvEnergySensor(MpvSensor):
+class MpvEnergySensor(IntegrationSensor, MpvSensor):
     """Return energy state by integrating power consumption."""
 
-    def __init__(self, device, key, info) -> None:
+    _attr_state_class = SensorStateClass.TOTAL
+
+    def __init__(self, device, key, info, source) -> None:
         """Initialize the sensor."""
-        super().__init__(device, key, info)
         self._last_value = 0
+        # Explicitly initialize both superclasses
+        IntegrationSensor.__init__(
+            self,
+            source_entity=f"sensor.{source[0].replace(' ', '_').replace('-', '_').lower()}",
+            name=info[0],
+            round_digits=1,
+            integration_method="trapezoidal",
+            unit_prefix="k",
+            unit_time=UnitOfTime.HOURS,
+            unique_id=f"{device.serial_number}_{info[0]}",
+            max_sub_interval=None,
+        )
+        self._name = info[0]
+        MpvSensor.__init__(self, device, key, info)
 
     @property
     def icon(self):
@@ -242,22 +270,20 @@ class MpvEnergySensor(MpvSensor):
     @property
     def state(self):
         """Return the state of the device."""
+        return self._last_value
 
+    @property
+    def device_class(self):
+        """Return device class of sensor."""
+        return SensorDeviceClass.ENERGY
+
+    async def async_update(self):
+        """Update the sensor state."""
+        await self.async_get_last_sensor_data()
+        if self._state is None:
+            return
         try:
-            last_time = (
-                self.hass.data["entity_registry"]
-                .entities.data["sensor.energy_consumption"]
-                .modified_at
-            )
-            dt = (datetime.now(last_time.tzinfo) - last_time).seconds + (
-                datetime.now(last_time.tzinfo) - last_time
-            ).microseconds / 1000000
-            # print(f"Timediff = {dt}")
-            p_val = self.device.data[self._key.replace("int_", "")]
-            state = self._last_value + p_val / 1000 * dt / 3600
-        except Exception as err_msg:
-            state = self._last_value
-        if state is None:
-            return state
-        self._last_value = state
-        return round(state, 2)
+            self._last_value = float(self._state)
+        except ValueError:
+            _LOGGER.error("Failed to convert state to float: %s", self._state)
+            self._last_value = 0.0

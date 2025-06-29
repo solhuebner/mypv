@@ -49,6 +49,7 @@ class MpyDevice(CoordinatorEntity):
         self.pid_power_set = 0
         self.logger = _LOGGER
         self.control_enabled = True
+        self.energy_sensor = None
 
     async def initialize(self):
         """Get setup information, find sensors."""
@@ -89,9 +90,9 @@ class MpyDevice(CoordinatorEntity):
             if key in data_keys:
                 data_keys.remove(key)
 
-        data_keys = list(self.data.keys())
-        defined_data_keys = list(SENSOR_TYPES.keys())
-        setup_keys = list(self.setup.keys())
+        data_keys = list(self.data.keys())  # type: ignore  # noqa: PGH003
+        defined_data_keys = list(SENSOR_TYPES.keys())  # type: ignore  # noqa: PGH003
+        setup_keys = list(self.setup.keys())  # type: ignore  # noqa: PGH003
         defined_setup_keys = list(SETUP_TYPES.keys())
         remove_data_key("device")
         remove_data_key("fwversionlatest")
@@ -123,10 +124,10 @@ class MpyDevice(CoordinatorEntity):
                     "text",
                 ]
                 and key in data_keys
-                and self.data[key] is not None
-                and self.data[key] != "null"
+                and self.data[key] is not None  # type: ignore  # noqa: PGH003
+                and self.data[key] != "null"  # type: ignore  # noqa: PGH003
             ):
-                self.logger.info(f"Sensor Key: {key}: {self.data[key]}")  # noqa: G004
+                self.logger.info(f"Sensor Key: {key}: {self.data[key]}")  # type: ignore  # noqa: G004, PGH003
                 if SENSOR_TYPES[key][2] in ["sensor", "text", "ip_string", "version"]:
                     self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["dev_stat"]:
@@ -151,9 +152,15 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(
                         MpvSensor(self, key, SENSOR_TYPES[key])
                     )  # power
-                    # self.sensors.append(
-                    #     MpvEnergySensor(self, f"int_{key}", SENSOR_TYPES[f"int_{key}"])
-                    # )  # energy
+                    self.sensors.append(
+                        MpvEnergySensor(
+                            self,
+                            f"int_{key}",
+                            SENSOR_TYPES[f"int_{key}"],
+                            SENSOR_TYPES[key],
+                        )
+                    )  # energy
+                    self.energy_sensor = self.sensors[-1]
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
                 # Sensor value might not be available at statrtup
                 self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
@@ -170,10 +177,10 @@ class MpyDevice(CoordinatorEntity):
                     "control",
                 ]
                 and key in setup_keys
-                and self.setup[key] is not None
-                and self.setup[key] != "null"
+                and self.setup[key] is not None  # type: ignore  # noqa: PGH003
+                and self.setup[key] != "null"  # type: ignore  # noqa: PGH003
             ):
-                self.logger.info(f"Setup Key: {key}: {self.setup[key]}")  # noqa: G004
+                self.logger.info(f"Setup Key: {key}: {self.setup[key]}")  # type: ignore  # noqa: G004, PGH003
                 if SETUP_TYPES[key][2] in ["sensor", "text", "ip_string"]:
                     self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["binary_sensor"]:
@@ -190,6 +197,7 @@ class MpyDevice(CoordinatorEntity):
 
     async def update(self):
         """Update all sensors."""
+        await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
