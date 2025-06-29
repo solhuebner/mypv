@@ -1,7 +1,6 @@
 """Provides the myPV DataUpdateCoordinator."""
 
 import asyncio
-from datetime import timedelta
 import json
 import logging
 import socket
@@ -50,7 +49,7 @@ async def detect_mypv(ip_str: str) -> list[str]:
             await asyncio.sleep(0.02)
         except TimeoutError:
             pass
-    pass
+
     return detected_ips
 
 

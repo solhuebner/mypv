@@ -136,7 +136,7 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(MpvUpdateSensor(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["binary_sensor"]:
                     self.binary_sensors.append(
-                        MpvBinSensor(self, key, SENSOR_TYPES[key])
+                        MpvBinSensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
                     )
                 elif SENSOR_TYPES[key][2] in ["button"] and self.control_enabled:
                     self.buttons.append(MpvBoostButton(self, key, SENSOR_TYPES[key]))
@@ -185,7 +185,7 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["binary_sensor"]:
                     self.binary_sensors.append(
-                        MpvBinSensor(self, key, SETUP_TYPES[key])
+                        MpvBinSensor(self, key, SETUP_TYPES[key])  # type: ignore  # noqa: PGH003
                     )
                 elif SETUP_TYPES[key][2] in ["switch"]:
                     self.switches.append(MpvSetupSwitch(self, key, SETUP_TYPES[key]))

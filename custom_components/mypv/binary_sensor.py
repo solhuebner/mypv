@@ -1,17 +1,34 @@
 """Binary sensors of myPV integration."""
 
 import logging
+from typing import TYPE_CHECKING, Any, override
 
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.binary_sensor import (
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
+)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import COMM_HUB, DOMAIN
 
+if TYPE_CHECKING:
+    from .communicate import MypvCommunicator
+    from .mypv_device import MpyDevice
+
+    CoordinatorEntity = CoordinatorEntity[MypvCommunicator]
+
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Add all myPV binary sensor entities."""
     comm = hass.data[DOMAIN][entry.entry_id][COMM_HUB]
 
@@ -19,63 +36,54 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         async_add_entities(device.binary_sensors)
 
 
-class MpvBinSensor(CoordinatorEntity):
-    """Representation of a MyPV binary sensors."""
+class MpvBinSensor(CoordinatorEntity, BinarySensorEntity):
+    """Representation of a MyPV binary sensor."""
 
-    def __init__(self, device, key, info) -> None:
+    def __init__(
+        self,
+        device: "MpyDevice",
+        key: str,
+        info: tuple[str, Any, str],
+    ) -> None:
         """Initialize the sensor."""
         super().__init__(device.comm)
-        self.device = device
-        self.comm = device.comm
-        self._key = key
-        self._name = info[0]
-        self._type = info[2]
-        self._last_value = None
+        self._device = device
+        self.entity_description = BinarySensorEntityDescription(
+            key=key,
+            has_entity_name=True,
+            name=info[0],
+            device_class=None,
+        )
+        self._attr_unique_id = (
+            f"{self._device.serial_number}_{self.entity_description.name}"
+        )
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._device.serial_number)},
+            name=self._device.name,
+            manufacturer="myPV",
+            model=self._device.model,
+        )
 
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
-    @property
-    def state(self):
-        """Return the state of the device."""
+    @override
+    def _handle_coordinator_update(self) -> None:
+        key = self.entity_description.key
         try:
-            state = self.device.data[self._key]
-            if self._type == "power_act":
-                relOut = int(self.comm.data["rel1_out"])
-                loadNom = int(self.comm.data["load_nom"])
-                state = (relOut * loadNom) + int(state)
-            self._last_value = state
-        except Exception as err_msg:
-            state = self._last_value
-        if state is None:
-            return state
-        return state
+            value = self._device.data[key]  # type: ignore  # noqa: PGH003
+        except (KeyError, TypeError):
+            _LOGGER.warning(
+                "Update for %s failed, key %s not found", self.entity_id, key
+            )
+        else:
+            self._attr_is_on = _map_bool_value(value)
+            super()._handle_coordinator_update()
 
-    @property
-    def state_class(self):
-        """Return device state class of sensor."""
-        return SensorStateClass.MEASUREMENT
 
-    @property
-    def icon(self):
-        """Return icon."""
-        if self.state:
-            return "mdi:toggle-switch-variant"
-        return "mdi:toggle-switch-variant-off"
-
-    @property
-    def unique_id(self):
-        """Return unique id based on device serial and variable."""
-        return f"{self.device.serial_number}_{self._name}"
-
-    @property
-    def device_info(self):
-        """Return information about the device."""
-        return {
-            "identifiers": {(DOMAIN, self.device.serial_number)},
-            "name": self.device.name,
-            "manufacturer": "myPV",
-            "model": self.device.model,
-        }
+def _map_bool_value(value: Any) -> bool:
+    match value:
+        case "1" | 1 | True:
+            return True
+        case "0" | 0 | False:
+            return False
+        case _:
+            _LOGGER.warning("Unexpected value for binary sensor: %r", value)
+            return bool(value)

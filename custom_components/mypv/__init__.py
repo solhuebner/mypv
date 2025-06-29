@@ -1,12 +1,10 @@
 """Integration ELWA myPV."""
 
 from httpcore import TimeoutException
-import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .communicate import MypvCommunicator
@@ -49,8 +47,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         if not comm.last_update_success:
             raise ConfigEntryNotReady(
-            f"Update of myPV device at {entry.data[DEV_IP]} failed"
-        )
+                f"Update of myPV device at {entry.data[DEV_IP]} failed"
+            )
 
         hass.data[DOMAIN][entry.entry_id] = {
             COMM_HUB: comm,
