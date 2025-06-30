@@ -150,6 +150,20 @@ class MpvSensor(CoordinatorEntity, SensorEntity):
         return None
 
 
+class MpvOutStatSensor(MpvSensor):
+    """Return output state from last digit for AC-Thor 9s."""
+
+    @callback
+    def _handle_coordinator_update(self):
+        """Handle updated data from the coordinator."""
+        value = self.device.data[self._key]
+        str_number = str(value)
+        state = int(str_number[-1])  # Get the last digit
+        self._last_value = state
+        self._attr_native_value = state
+        self.async_write_ha_state()
+
+
 class MpvUpdateSensor(MpvSensor):
     """Return update state from enum."""
 

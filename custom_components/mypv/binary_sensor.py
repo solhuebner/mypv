@@ -74,16 +74,43 @@ class MpvBinSensor(CoordinatorEntity, BinarySensorEntity):
                 "Update for %s failed, key %s not found", self.entity_id, key
             )
         else:
-            self._attr_is_on = _map_bool_value(value)
+            self._attr_is_on = self.map_bool_value(value)
             super()._handle_coordinator_update()
 
+    def map_bool_value(self, value: Any) -> bool:
+        """Help to map the value to a boolean."""
+        match value:
+            case "1" | 1 | True:
+                return True
+            case "0" | 0 | False:
+                return False
+            case _:
+                _LOGGER.warning("Unexpected value for binary sensor: %r", value)
+                return bool(value)
 
-def _map_bool_value(value: Any) -> bool:
-    match value:
-        case "1" | 1 | True:
-            return True
-        case "0" | 0 | False:
-            return False
-        case _:
-            _LOGGER.warning("Unexpected value for binary sensor: %r", value)
-            return bool(value)
+
+class MpvBin1Sensor(MpvBinSensor):
+    """Representation of a MyPV binary sensor for AC-Thor 9s."""
+
+    def map_bool_value(self, value: Any) -> bool:
+        """Help to map the value to a boolean."""
+        str_number = str(value).zfill(4)
+        return str_number[0] == "1"
+
+
+class MpvBin2Sensor(MpvBinSensor):
+    """Representation of a MyPV binary sensor for AC-Thor 9s."""
+
+    def map_bool_value(self, value: Any) -> bool:
+        """Help to map the value to a boolean."""
+        str_number = str(value).zfill(4)
+        return str_number[1] == "1"
+
+
+class MpvBin3Sensor(MpvBinSensor):
+    """Representation of a MyPV binary sensor for AC-Thor 9s."""
+
+    def map_bool_value(self, value: Any) -> bool:
+        """Help to map the value to a boolean."""
+        str_number = str(value).zfill(4)
+        return str_number[2] == "1"

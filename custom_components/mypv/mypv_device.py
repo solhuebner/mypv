@@ -6,11 +6,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .binary_sensor import MpvBinSensor
+from .binary_sensor import MpvBin1Sensor, MpvBin2Sensor, MpvBin3Sensor, MpvBinSensor
 from .button import MpvBoostButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
 from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvToutControl
-from .sensor import MpvDevStatSensor, MpvEnergySensor, MpvSensor, MpvUpdateSensor
+from .sensor import (
+    MpvDevStatSensor,
+    MpvEnergySensor,
+    MpvOutStatSensor,
+    MpvSensor,
+    MpvUpdateSensor,
+)
 from .switch import MpvHttpSwitch, MpvSetupSwitch
 
 _LOGGER = logging.getLogger(__name__)
@@ -135,9 +141,27 @@ class MpyDevice(CoordinatorEntity):
                 elif SENSOR_TYPES[key][2] in ["upd_stat"]:
                     self.sensors.append(MpvUpdateSensor(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["binary_sensor"]:
-                    self.binary_sensors.append(
-                        MpvBinSensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
-                    )
+                    if self.model == "AC-THOR 9s" and SENSOR_TYPES[key][0] == "Relais":
+                        SENSOR_TYPES[key][0] = "Relais 1"
+                        self.binary_sensors.append(
+                            MpvBin1Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                        )
+                        SENSOR_TYPES[key][0] = "Relais 3"
+                        self.binary_sensors.append(
+                            MpvBin2Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                        )
+                        SENSOR_TYPES[key][0] = "Relais 2"
+                        self.binary_sensors.append(
+                            MpvBin3Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                        )
+                        SENSOR_TYPES[key][0] = "Output status"
+                        self.sensors.append(
+                            MpvOutStatSensor(self, key, SENSOR_TYPES[key])
+                        )
+                    else:
+                        self.binary_sensors.append(
+                            MpvBinSensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                        )
                 elif SENSOR_TYPES[key][2] in ["button"] and self.control_enabled:
                     self.buttons.append(MpvBoostButton(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["control"]:
