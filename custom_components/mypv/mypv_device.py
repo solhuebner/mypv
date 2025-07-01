@@ -38,7 +38,8 @@ class MpyDevice(CoordinatorEntity):
         self.fw = info["fwversion"]
         self.model = info["device"]
         if "acthor9s" in info:
-            self.model += " 9s"
+            if info["acthor9s"] == "2":
+                self.model += " 9s"
         self._name = f"{self.model} {self._id}"
         self.state = 0
         self.setup = []

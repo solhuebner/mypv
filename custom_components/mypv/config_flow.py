@@ -11,7 +11,6 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
 
 from .const import CONF_HOSTS, DEV_IP, DOMAIN, MAX_IP, MIN_IP
 
@@ -48,10 +47,10 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Return True if all hosts found already exist in configuration."""
         return all(ip in mypv_entries(self.hass) for ip in ip_list)
 
-    def _check_host(self, dev_ip: str) -> tuple[bool, str]:
+    def _check_host(self, dev_ip: str) -> tuple[bool, list[str]]:
         """Check if connect to myPV device with given ip address works."""
 
-        host_list = []
+        host_list: list[str] = []
         try:
             response = requests.get(f"http://{dev_ip}/mypv_dev.jsn", timeout=0.5)
             json.loads(response.text)
@@ -78,7 +77,7 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     #             pass
     #     return len(host_list) > 0, host_list
 
-    async def async_step_user(self, user_input=None) -> FlowResult:
+    async def async_step_user(self, user_input=None) -> config_entries.ConfigFlowResult:
         """Handle the initial step."""
 
         if user_input is None:
@@ -129,13 +128,12 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
         self._errors = {}
         self._info = {}
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> config_entries.ConfigFlowResult:
         """Manage the options."""
         self._errors = {}
         if user_input is None:
