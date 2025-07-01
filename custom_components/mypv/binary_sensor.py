@@ -94,7 +94,13 @@ class MpvBin1Sensor(MpvBinSensor):
 
     def map_bool_value(self, value: Any) -> bool:
         """Help to map the value to a boolean."""
-        str_number = str(value).zfill(4)
+        if isinstance(value, int):
+            str_number = str(value).zfill(4)
+        elif isinstance(value, str):
+            str_number = value
+        else:
+            _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
+            return False
         return str_number[0] == "1"
 
 
@@ -103,7 +109,13 @@ class MpvBin2Sensor(MpvBinSensor):
 
     def map_bool_value(self, value: Any) -> bool:
         """Help to map the value to a boolean."""
-        str_number = str(value).zfill(4)
+        if isinstance(value, int):
+            str_number = str(value).zfill(4)
+        elif isinstance(value, str):
+            str_number = value
+        else:
+            _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
+            return False
         return str_number[1] == "1"
 
 
@@ -112,5 +124,11 @@ class MpvBin3Sensor(MpvBinSensor):
 
     def map_bool_value(self, value: Any) -> bool:
         """Help to map the value to a boolean."""
-        str_number = str(value).zfill(4)
+        if isinstance(value, int):
+            str_number = str(value).zfill(4)
+        elif isinstance(value, str):
+            str_number = value
+        else:
+            _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
+            return False
         return str_number[2] == "1"

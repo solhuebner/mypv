@@ -158,7 +158,13 @@ class MpvOutStatSensor(MpvSensor):
     def _handle_coordinator_update(self):
         """Handle updated data from the coordinator."""
         value = self.device.data[self._key]
-        str_number = str(value)
+        if isinstance(value, int):
+            str_number = str(value).zfill(4)
+        elif isinstance(value, str):
+            str_number = value
+        else:
+            _LOGGER.warning("Unexpected type for output status sensor value: %r", value)
+            str_number = "0000"
         state = int(str_number[-1])  # Get the last digit
         self._last_value = state
         self._attr_native_value = state
