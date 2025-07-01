@@ -43,7 +43,7 @@ class MpvBinSensor(CoordinatorEntity, BinarySensorEntity):
         self,
         device: "MpyDevice",
         key: str,
-        info: tuple[str, Any, str],
+        info: list[Any],
     ) -> None:
         """Initialize the sensor."""
         super().__init__(device.comm)

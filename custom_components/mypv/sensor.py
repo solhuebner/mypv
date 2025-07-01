@@ -1,6 +1,7 @@
 """Sensors of myPV integration."""
 
 import logging
+from typing import Any
 
 from homeassistant.components.integration.sensor import IntegrationSensor, UnitOfTime
 from homeassistant.components.sensor import (
@@ -40,7 +41,7 @@ class MpvSensor(CoordinatorEntity, SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_should_poll = True
 
-    def __init__(self, device, key, info) -> None:
+    def __init__(self, device, key: str, info: list[Any]) -> None:
         """Initialize the sensor."""
         super().__init__(device.comm)
         self.device = device

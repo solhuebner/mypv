@@ -142,25 +142,23 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(MpvUpdateSensor(self, key, SENSOR_TYPES[key]))
                 elif SENSOR_TYPES[key][2] in ["binary_sensor"]:
                     if self.model == "AC-THOR 9s" and SENSOR_TYPES[key][0] == "Relais":
-                        SENSOR_TYPES[key][0] = "Relais 1"
+                        sensor_type: list[str] = SENSOR_TYPES[key]
                         self.binary_sensors.append(
-                            MpvBin1Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                            MpvBin1Sensor(self, key, sensor_type)
                         )
-                        SENSOR_TYPES[key][0] = "Relais 3"
+                        sensor_type[0] = "Out 3"
                         self.binary_sensors.append(
-                            MpvBin2Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                            MpvBin2Sensor(self, key, sensor_type)
                         )
-                        SENSOR_TYPES[key][0] = "Relais 2"
+                        sensor_type[0] = "Out 2"
                         self.binary_sensors.append(
-                            MpvBin3Sensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                            MpvBin3Sensor(self, key, sensor_type)
                         )
-                        SENSOR_TYPES[key][0] = "Output status"
-                        self.sensors.append(
-                            MpvOutStatSensor(self, key, SENSOR_TYPES[key])
-                        )
+                        sensor_type[0] = "Output status"
+                        self.sensors.append(MpvOutStatSensor(self, key, sensor_type))
                     else:
                         self.binary_sensors.append(
-                            MpvBinSensor(self, key, SENSOR_TYPES[key])  # type: ignore  # noqa: PGH003
+                            MpvBinSensor(self, key, SENSOR_TYPES[key])
                         )
                 elif SENSOR_TYPES[key][2] in ["button"] and self.control_enabled:
                     self.buttons.append(MpvBoostButton(self, key, SENSOR_TYPES[key]))
@@ -209,7 +207,7 @@ class MpyDevice(CoordinatorEntity):
                     self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["binary_sensor"]:
                     self.binary_sensors.append(
-                        MpvBinSensor(self, key, SETUP_TYPES[key])  # type: ignore  # noqa: PGH003
+                        MpvBinSensor(self, key, SETUP_TYPES[key])
                     )
                 elif SETUP_TYPES[key][2] in ["switch"]:
                     self.switches.append(MpvSetupSwitch(self, key, SETUP_TYPES[key]))
@@ -221,7 +219,8 @@ class MpyDevice(CoordinatorEntity):
 
     async def update(self):
         """Update all sensors."""
-        await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
+        if self.energy_sensor is not None:
+            await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
