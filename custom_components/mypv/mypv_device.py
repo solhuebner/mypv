@@ -221,7 +221,8 @@ class MpyDevice(CoordinatorEntity):
 
     async def update(self):
         """Update all sensors."""
-        await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
+        if self.energy_sensor is not None:
+            await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp
