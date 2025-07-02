@@ -170,6 +170,11 @@ class MpvOutStatSensor(MpvSensor):
         self._attr_native_value = state
         self.async_write_ha_state()
 
+    @property
+    def icon(self):
+        """Return icon."""
+        return "mdi:format-list-numbered"
+
 
 class MpvUpdateSensor(MpvSensor):
     """Return update state from enum."""
@@ -297,6 +302,16 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
     def device_class(self):
         """Return device class of sensor."""
         return SensorDeviceClass.ENERGY
+
+    @property
+    def state_class(self):
+        """Return state class of sensor."""
+        return SensorStateClass.TOTAL
+
+    @property
+    def last_reset(self):
+        """Return last reset of sensor."""
+        return None
 
     async def async_update(self):
         """Update the sensor state."""
