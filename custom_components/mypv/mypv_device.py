@@ -7,7 +7,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .binary_sensor import MpvBin1Sensor, MpvBin2Sensor, MpvBin3Sensor, MpvBinSensor
-from .button import MpvBoostButton
+from .button import MpvBoostButton, MpvBoostOffButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
 from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvToutControl
 from .sensor import (
@@ -163,6 +163,9 @@ class MpyDevice(CoordinatorEntity):
                         )
                 elif SENSOR_TYPES[key][2] in ["button"] and self.control_enabled:
                     self.buttons.append(MpvBoostButton(self, key, SENSOR_TYPES[key]))
+                    self.buttons.append(
+                        MpvBoostOffButton(self, key + "off", SENSOR_TYPES[key + "off"])
+                    )
                 elif SENSOR_TYPES[key][2] in ["control"]:
                     if self.control_enabled:
                         self.controls.append(

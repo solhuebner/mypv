@@ -63,6 +63,7 @@ SENSOR_TYPES = {
     "temp3": ["Temperatur 3", UnitOfTemperature.CELSIUS, "sensor"],
     "temp4": ["Temperatur 4", UnitOfTemperature.CELSIUS, "sensor"],
     "boostactive": ["Start Boost", None, "button"],
+    "boostactiveoff": ["Stop Boost", None, "button"],
     "legboostnext": ["legboostnext", None, "sensor"],
     "date": ["Date", None, "sensor"],
     "loctime": ["Loctime", None, "sensor"],

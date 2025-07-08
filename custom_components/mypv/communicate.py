@@ -213,12 +213,11 @@ class MypvCommunicator(DataUpdateCoordinator):
         else:
             return True
 
-    async def activate_boost(self, device):
+    async def activate_boost(self, device, mode: int = 1):
         """Set heater power with local pid control."""
         try:
-            url = f"http://{device.ip}/control.html?boost=1"
-            response_text = await self.do_get_request(url)
-            self.get_state_dict(response_text, device)
+            url = f"http://{device.ip}/data.jsn?bststrt={mode}"
+            await self.do_get_request(url)
         except Exception as err_msg:  # noqa: BLE001
             self.logger.warning(f"Error during boost command: {err_msg}")  # noqa: G004
             return False
