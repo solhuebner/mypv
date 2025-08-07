@@ -276,6 +276,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         # Explicitly initialize both superclasses
         IntegrationSensor.__init__(
             self,
+            device.comm.hass,
             source_entity=f"sensor.{source[0].replace(' ', '_').replace('-', '_').lower()}",
             name=info[0],
             round_digits=1,

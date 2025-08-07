@@ -71,13 +71,14 @@ class MypvCommunicator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=DOMAIN,
+            config_entry=entry,
             update_interval=update_interval,
         )
 
     async def initialize(self):
         """Do the async stuff."""
 
-        detected_ips = await detect_mypv(self.hosts[0])
+        # detected_ips = await detect_mypv(self.hosts[0])
         for ip_str in self.hosts:
             try:
                 info_data = await self.check_ip(ip_str)
@@ -182,7 +183,7 @@ class MypvCommunicator(DataUpdateCoordinator):
         """Set power control mode, e.g. html."""
         try:
             url = f"http://{device.ip}/setup.jsn?ctrl={act_mode}"
-            response_text = await self.do_get_request(url)
+            response_text = await self.do_get_request(url)  # noqa: F841
             # self.get_state_dict(response_text, device)
             return True  # noqa: TRY300
         except Exception as err_msg:  # noqa: BLE001
@@ -231,5 +232,5 @@ class MypvCommunicator(DataUpdateCoordinator):
         for line in resp_lines:
             if len(line) > 4 and not line.startswith("<"):
                 parts = line.split("=")
-                if len(parts) > 2:
+                if len(parts) >= 2:
                     device.state_dict[parts[0]] = parts[1].split()[0].replace(",", "")
