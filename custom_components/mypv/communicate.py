@@ -1,6 +1,7 @@
 """Provides the myPV DataUpdateCoordinator."""
 
 import asyncio
+from datetime import timedelta
 import json
 import logging
 import socket
@@ -12,7 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import CONF_HOSTS, DOMAIN, MIN_TIME_BETWEEN_UPDATES
+from .const import CONF_DEFAULT_INTERVAL, CONF_HOSTS, DOMAIN, UPDATE_INTERVAL
 from .mypv_device import MpyDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,7 +64,12 @@ class MypvCommunicator(DataUpdateCoordinator):
         self._info = None
         self._setup = None
         self._next_update = 0
-        update_interval = MIN_TIME_BETWEEN_UPDATES
+        # For systems before v1.0.0
+        if UPDATE_INTERVAL not in entry.data:
+            data = dict(entry.data)
+            data[UPDATE_INTERVAL] = CONF_DEFAULT_INTERVAL
+            hass.config_entries.async_update_entry(entry, data=data)
+        update_interval = timedelta(seconds=entry.data[UPDATE_INTERVAL])
         self.logger = _LOGGER
         self.devices = []
         self.hass = hass

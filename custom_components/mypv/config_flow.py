@@ -9,10 +9,18 @@ import requests
 from requests.exceptions import ConnectTimeout, HTTPError
 import voluptuous as vol
 
-from homeassistant import config_entries
+from homeassistant import config_entries, exceptions
 from homeassistant.core import HomeAssistant, callback
 
-from .const import CONF_HOSTS, DEV_IP, DOMAIN, MAX_IP, MIN_IP
+from .const import (
+    CONF_DEFAULT_INTERVAL,
+    CONF_HOSTS,
+    CONF_MAX_INTERVAL,
+    CONF_MIN_INTERVAL,
+    DEV_IP,
+    DOMAIN,
+    UPDATE_INTERVAL,
+)
 
 
 @callback
@@ -82,18 +90,31 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is None:
             default_dev_ip = "192.168.178.100"
+            default_interval = CONF_DEFAULT_INTERVAL
         else:
             default_dev_ip = user_input[DEV_IP]
+            default_interval = user_input[UPDATE_INTERVAL]
 
         if user_input is not None:
             # min_ip = user_input[MIN_IP]
             # max_ip = user_input[MAX_IP]
             dev_ip = user_input[DEV_IP]
+            update_interval = user_input[UPDATE_INTERVAL]
+
+            if not (isinstance(update_interval, int)):
+                self._errors[UPDATE_INTERVAL] = "invalid_interval"
+
+            if update_interval < CONF_MIN_INTERVAL:
+                self._errors[UPDATE_INTERVAL] = "interval_too_short"
+
+            if update_interval > CONF_MAX_INTERVAL:
+                self._errors[UPDATE_INTERVAL] = "interval_too_long"
+
             can_connect, ips_found = await self.hass.async_add_executor_job(
                 self._check_host,
                 dev_ip,  # min_ip, max_ip
             )
-            if can_connect:
+            if can_connect and not self._errors:
                 if self._all_hosts_in_configuration_exist(ips_found):
                     self._errors[DEV_IP] = "host_exists"
                 else:
@@ -104,15 +125,20 @@ class MpvConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             # MIN_IP: min_ip,
                             # MAX_IP: max_ip,
                             DEV_IP: dev_ip,
+                            UPDATE_INTERVAL: update_interval,
                             CONF_HOSTS: ips_found,
                         },
                     )
-            else:
+            elif not can_connect:
                 self._errors[DEV_IP] = "could_not_connect"
 
         setup_schema = vol.Schema(
             {
                 vol.Required(DEV_IP, default=default_dev_ip): str,
+                vol.Required(
+                    "update_interval",
+                    default=default_interval,
+                ): int,
                 # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
                 # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
             }
@@ -138,11 +164,17 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
         self._errors = {}
         if user_input is None:
             default_dev_ip = self.config_entry.data[DEV_IP]
+            default_interval = self.config_entry.data[UPDATE_INTERVAL]
         else:
             default_dev_ip = user_input[DEV_IP]
+            default_interval = user_input[UPDATE_INTERVAL]
         opt_schema = vol.Schema(
             {
                 vol.Required(DEV_IP, default=default_dev_ip): str,
+                vol.Required(
+                    "update_interval",
+                    default=default_interval,
+                ): int,
                 # vol.Required(MIN_IP, default=user_input[MIN_IP]): str,
                 # vol.Required(MAX_IP, default=user_input[MAX_IP]): str,
             }
@@ -151,6 +183,17 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
             # min_ip = user_input[MIN_IP]
             # max_ip = user_input[MAX_IP]
             dev_ip = user_input[DEV_IP]
+            update_interval = user_input[UPDATE_INTERVAL]
+
+            if not (isinstance(update_interval, int)):
+                self._errors[UPDATE_INTERVAL] = "invalid_interval"
+
+            if update_interval < CONF_MIN_INTERVAL:
+                self._errors[UPDATE_INTERVAL] = "interval_too_short"
+
+            if update_interval > CONF_MAX_INTERVAL:
+                self._errors[UPDATE_INTERVAL] = "interval_too_long"
+
             can_connect, ips_found = await self.hass.async_add_executor_job(
                 self._check_host,
                 dev_ip,  # min_ip, max_ip
@@ -159,9 +202,10 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
                 # MIN_IP: min_ip,
                 # MAX_IP: max_ip,
                 DEV_IP: dev_ip,
+                UPDATE_INTERVAL: update_interval,
                 CONF_HOSTS: ips_found,
             }
-            if can_connect:
+            if can_connect and not self._errors:
                 return self.async_update_reload_and_abort(
                     self.config_entry,
                     data=conf_data,
@@ -169,7 +213,8 @@ class MpvOptionsFlow(config_entries.OptionsFlow, MpvConfigFlow):
                     reason="options_updated",
                     reload_even_if_entry_is_unchanged=False,
                 )
-            self._errors[DEV_IP] = "could_not_connect"
+            if not can_connect:
+                self._errors[DEV_IP] = "could_not_connect"
 
         return self.async_show_form(
             step_id="init", data_schema=opt_schema, errors=self._errors
