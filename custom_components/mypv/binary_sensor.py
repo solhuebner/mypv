@@ -86,7 +86,7 @@ class MpvBinSensor(CoordinatorEntity, BinarySensorEntity):
                 return False
             case _:
                 _LOGGER.warning("Unexpected value for binary sensor: %r", value)
-                return bool(value)
+                return False
 
 
 class MpvBin1Sensor(MpvBinSensor):
@@ -97,7 +97,7 @@ class MpvBin1Sensor(MpvBinSensor):
         if isinstance(value, int):
             str_number = str(value).zfill(4)
         elif isinstance(value, str):
-            str_number = value
+            str_number = str(int(value)).zfill(4)  # Ensure it's zero-padded
         else:
             _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
             return False
@@ -112,7 +112,7 @@ class MpvBin2Sensor(MpvBinSensor):
         if isinstance(value, int):
             str_number = str(value).zfill(4)
         elif isinstance(value, str):
-            str_number = value
+            str_number = str(int(value)).zfill(4)  # Ensure it's zero-padded
         else:
             _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
             return False
@@ -127,7 +127,7 @@ class MpvBin3Sensor(MpvBinSensor):
         if isinstance(value, int):
             str_number = str(value).zfill(4)
         elif isinstance(value, str):
-            str_number = value
+            str_number = str(int(value)).zfill(4)  # Ensure it's zero-padded
         else:
             _LOGGER.warning("Unexpected type for binary sensor value: %r", value)
             return False

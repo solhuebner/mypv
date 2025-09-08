@@ -234,6 +234,7 @@ class MypvCommunicator(DataUpdateCoordinator):
     def get_state_dict(self, text: str, device) -> None:
         """Convert lines to state dict."""
 
+        text = text.replace("\r\n", "<br>").replace("\n", "<br>")
         resp_lines = text.split("<br>")
         for line in resp_lines:
             if len(line) > 4 and not line.startswith("<"):

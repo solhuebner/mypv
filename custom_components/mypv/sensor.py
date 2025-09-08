@@ -1,5 +1,6 @@
 """Sensors of myPV integration."""
 
+from datetime import timedelta
 import logging
 from typing import Any
 
@@ -284,7 +285,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
             unit_prefix="k",
             unit_time=UnitOfTime.HOURS,
             unique_id=f"{device.serial_number}_{info[0]}",
-            max_sub_interval=None,
+            max_sub_interval=timedelta(seconds=10),
         )
         self._name = info[0]
         MpvSensor.__init__(self, device, key, info)
