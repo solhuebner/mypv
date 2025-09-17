@@ -1,6 +1,7 @@
 """Sensors of myPV integration."""
 
 from datetime import timedelta
+from decimal import Decimal
 import logging
 from typing import Any
 
@@ -108,8 +109,6 @@ class MpvSensor(CoordinatorEntity, SensorEntity):
             return "mdi:state-machine"
         if self._name in ["Fan speed"]:
             return "mdi:fan"
-        if self._name in ["Control type"]:
-            return "mdi:format-list-bulleted-type"
         return None
 
     @property
@@ -177,20 +176,109 @@ class MpvOutStatSensor(MpvSensor):
         return "mdi:format-list-numbered"
 
 
-class MpvUpdateSensor(MpvSensor):
-    """Return update state from enum."""
+class MpvCtrlTypeSensor(MpvSensor):
+    """Return control type state."""
+
+    def __init__(self, device, key, info) -> None:
+        """Initialize the sensor."""
+        super().__init__(device, key, info)
+        self._last_value = 0
+        self._enum = {
+            0: "Auto Detect",
+            1: "HTTP",
+            2: "Modbus TCP",
+            3: "Fronius Auto",
+            4: "Fronius Manual",
+            5: "SMA Home Manager",
+            6: "Steca Auto",
+            7: "Varta Auto",
+            8: "Varta Manual",
+            10: "RCT Power Manual",
+            12: "my-PV Meter Auto",
+            13: "my-PV Meter Manual",
+            14: "my-PV Power Meter Direct",
+            15: "SMA Direct meter communication Auto",
+            16: "SMA Direct meter communication Manual",
+            19: "Digital Meter P1",
+            20: "Frequency",
+            21: "my-PV API",
+            100: "Fronius Sunspec Manual",
+            102: "Kostal PIKO IQ Plenticore plus Manual",
+            103: "Kostal Smart Energy Meter Manual",
+            104: "MEC electronics Manual",
+            105: "SolarEdge Manual",
+            106: "Victron Energy 1ph Manual",
+            107: "Victron Energy 3ph Manual",
+            108: "Huawei (Modbus TCP) Manual",
+            109: "Carlo Gavazzi EM24 Manual",
+            111: "Sungrow Manual",
+            112: "Fronius Gen24 Manual",
+            200: "Huawei (Modbus RTU)",
+            201: "Growatt (Modbus RTU)",
+            202: "Solax (Modbus RTU)",
+            203: "Qcells (Modbus RTU)",
+            204: "IME Conto D4 Modbus MID (Modbus RTU)",
+            211: "my-PV WiFi Meter (Modbus RTU)",
+        }
 
     @property
     def icon(self):
         """Return icon."""
-        match self._last_value:
-            case 0:
+        return "mdi:format-list-bulleted-type"
+
+    @property
+    def state(self):
+        """Return the state of the device."""
+
+        try:
+            state = self.device.setup[self._key]
+            self._last_value = state
+            return self._enum[state]
+        except Exception:  # noqa: BLE001
+            state = self._last_value
+        return "Unknown"
+
+
+class MpvUpdateSensor(MpvSensor):
+    """Return update state from enum."""
+
+    def __init__(self, device, key, info) -> None:
+        """Initialize the sensor."""
+        super().__init__(device, key, info)
+        self._last_value = 0
+        if device.model == "Solthor":
+            self._enum = {
+                0: "State not available",
+                1: "No new fw available",
+                2: "New fw available",
+                3: "Download started (ini)",
+                4: "Download started (bin)",
+                5: "Download started (other)",
+                6: "Download interrupted",
+                7: "Download finished, waiting for installation",
+            }
+        else:
+            self._enum = {
+                0: "No new fw available",
+                1: "New fw available",
+                2: "Download started (ini)",
+                3: "Download started (bin)",
+                4: "Download started (other)",
+                5: "Download interrupted",
+                10: "Download finished, waiting for installation",
+            }
+
+    @property
+    def icon(self):
+        """Return icon."""
+        match self._enum[self._last_value]:
+            case "No new fw available":
                 return "mdi:clock-check-outline"
-            case 1:
+            case "New fw available":
                 return "mdi:update"
-            case 5:
+            case "Download interrupted":
                 return "mdi:download-off"
-            case 10:
+            case "Download finished, waiting for installation":
                 return "mdi:cellphone-arrow-down"
             case _:
                 return "mdi:download"
@@ -199,21 +287,12 @@ class MpvUpdateSensor(MpvSensor):
     def state(self):
         """Return the state of the device."""
 
-        UPDATE_STATUS = {
-            0: "No new fw available",
-            1: "New fw available",
-            2: "Download started (ini)",
-            3: "Download started (bin)",
-            4: "Download started (other)",
-            5: "Download interrupted",
-            10: "Download finished, waiting for installation",
-        }
         try:
             state = self.device.data[self._key]
             self._last_value = state
         except Exception:  # noqa: BLE001
             state = self._last_value
-        return UPDATE_STATUS[state]
+        return self._enum[state]
 
 
 class MpvDevStatSensor(MpvSensor):
@@ -223,6 +302,37 @@ class MpvDevStatSensor(MpvSensor):
         """Initialize the sensor."""
         super().__init__(device, key, info)
         self._last_value = 1
+        if device.model == "Solthor":
+            self._enum = {
+                0: "State not available",
+                1: "No control",
+                2: "Heat",
+                3: "Standby",
+                4: "Boost heat",
+                5: "Heat finished",
+                7: "Startup DC-heating",
+                21: "Legionella-Boost active",
+                22: "Device disabled",
+                23: "Device blocked",
+            }
+        else:
+            self._enum = {
+                0: "State not available",
+                1: "No control",
+                2: "Heat",
+                3: "Standby",
+                4: "Boost heat",
+                5: "Heat finished",
+                20: "Legionella-Boost active",
+                21: "Device disabled",
+                22: "Device blocked",
+                201: "STL triggered",
+                202: "Power stage overtemp",
+                203: "Power stage PCB temp probe fault",
+                204: "Hardware fault",
+                205: "ELWA Temp Sensor fault",
+                209: "Mainboard Error",
+            }
 
     @property
     def icon(self):
@@ -241,29 +351,12 @@ class MpvDevStatSensor(MpvSensor):
     def state(self):
         """Return the state of the device."""
 
-        DEVICE_STATE = {
-            0: "State not available",
-            1: "No control",
-            2: "Heat",
-            3: "Standby",
-            4: "Boost heat",
-            5: "Heat finished",
-            20: "Legionella-Boost active",
-            21: "Device disabled",
-            22: "Device blocked",
-            201: "STL triggered",
-            202: "Power stage overtemp",
-            203: "Power stage PCB temp probe fault",
-            204: "Hardware fault",
-            205: "ELWA Temp Sensor fault",
-            209: "Mainboard Error",
-        }
         try:
             state = self.device.state
             self._last_value = state + 1
         except Exception:  # noqa: BLE001
             pass
-        return DEVICE_STATE[self._last_value]
+        return self._enum[self._last_value]
 
 
 class MpvEnergySensor(IntegrationSensor, MpvSensor):
@@ -278,7 +371,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         IntegrationSensor.__init__(
             self,
             device.comm.hass,
-            source_entity=f"sensor.{source[0].replace(' ', '_').replace('-', '_').lower()}",
+            source_entity=f"sensor.{(device.name + '_' + source[0]).replace(' ', '_').replace('-', '_').lower()}",
             name=info[0],
             round_digits=1,
             integration_method="trapezoidal",
@@ -298,7 +391,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
     @property
     def state(self):
         """Return the state of the device."""
-        return self._last_value
+        return Decimal(self._last_value)
 
     @property
     def device_class(self):
@@ -319,6 +412,8 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         """Update the sensor state."""
         await self.async_get_last_sensor_data()
         if self._state is None:
+            self._state = Decimal("0.0")
+            self._last_value = 0.0
             return
         try:
             self._last_value = float(self._state)

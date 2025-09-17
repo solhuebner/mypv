@@ -11,6 +11,7 @@ from .button import MpvBoostButton, MpvBoostOffButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
 from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvToutControl
 from .sensor import (
+    MpvCtrlTypeSensor,
     MpvDevStatSensor,
     MpvEnergySensor,
     MpvOutStatSensor,
@@ -32,7 +33,10 @@ class MpyDevice(CoordinatorEntity):
         self._entry = comm.config_entry
         self._info = info
         self._ip = ip
-        self._id = info["number"]
+        if "number" in info:
+            self._id = info["number"]
+        else:
+            self._id = info["sn"]
         self.comm = comm
         self.serial_number = info["sn"]
         self.fw = info["fwversion"]
@@ -102,6 +106,7 @@ class MpyDevice(CoordinatorEntity):
         setup_keys = list(self.setup.keys())  # type: ignore  # noqa: PGH003
         defined_setup_keys = list(SETUP_TYPES.keys())
         remove_data_key("device")
+        remove_data_key("device")
         remove_data_key("fwversionlatest")
         remove_data_key("psversionlatest")
         remove_data_key("p9sversionlatest")
@@ -111,9 +116,12 @@ class MpyDevice(CoordinatorEntity):
         remove_data_key("unixtime")
         remove_data_key("wifi_list")
         remove_data_key("freq")
-        self.sensors.append(
-            MpvDevStatSensor(self, "control_state", ["Control state", None, "sensor"])
-        )
+        if self.model != "Solthor":
+            self.sensors.append(
+                MpvDevStatSensor(
+                    self, "control_state", ["Control state", None, "sensor"]
+                )
+            )
         for key in defined_data_keys:
             # use only keys included in data with valid values
             if (
@@ -197,6 +205,7 @@ class MpyDevice(CoordinatorEntity):
                 in [
                     "binary_sensor",
                     "button",
+                    "ctrl_type",
                     "number",
                     "sensor",
                     "switch",
@@ -209,6 +218,8 @@ class MpyDevice(CoordinatorEntity):
                 self.logger.info(f"Setup Key: {key}: {self.setup[key]}")  # type: ignore  # noqa: G004, PGH003
                 if SETUP_TYPES[key][2] in ["sensor", "text", "ip_string"]:
                     self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
+                elif SETUP_TYPES[key][2] in ["ctrl_type"]:
+                    self.sensors.append(MpvCtrlTypeSensor(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["binary_sensor"]:
                     self.binary_sensors.append(
                         MpvBinSensor(self, key, SETUP_TYPES[key])
@@ -217,8 +228,9 @@ class MpyDevice(CoordinatorEntity):
                     self.switches.append(MpvSetupSwitch(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["number"]:
                     self.controls.append(MpvSetupControl(self, key, SETUP_TYPES[key]))
-        self.switches.append(MpvHttpSwitch(self, "ctrl"))
-        self.controls.append(MpvToutControl(self, "tout"))
+        if self.model != "Solthor":
+            self.switches.append(MpvHttpSwitch(self, "ctrl"))
+            self.controls.append(MpvToutControl(self, "tout"))
         await self.update()
 
     async def update(self):

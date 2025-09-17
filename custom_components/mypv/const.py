@@ -57,6 +57,8 @@ SENSOR_TYPES = {
     "load_state": ["load_state", None, "sensor"],
     "load_nom": ["load_nom", UnitOfPower.WATT, "sensor"],
     "rel1_out": ["Relais", None, "binary_sensor"],
+    "relay_boost": ["Boost relais", None, "binary_sensor"],
+    "relay_alarm": ["Alarm relais", None, "binary_sensor"],
     "ww1target": ["Target temperature", UnitOfTemperature.CELSIUS, "sensor"],
     "temp1": ["Temperatur 1", UnitOfTemperature.CELSIUS, "sensor"],
     "temp2": ["Temperatur 2", UnitOfTemperature.CELSIUS, "sensor"],
@@ -153,6 +155,7 @@ SENSOR_TYPES = {
     "upd_files_left": ["Update files left", None, "sensor"],
     "ps_upd_state": ["Power Unit Update State", None, "upd_stat"],
     "p9s_upd_state": ["Acthor 9 Power Unit Update State", None, "upd_stat"],
+    "volt_solar": ["Volt solar", UnitOfElectricPotential.VOLT, "sensor"],
 }
 SETUP_TYPES = {
     # "mainmode": ["Operating Mode", None, "", "sensor"],
@@ -161,5 +164,5 @@ SETUP_TYPES = {
     "bstmode": ["Enable Boost Mode", None, "switch"],
     "ww1target": ["Target Temperature", None, "number"],
     "ww1boost": ["Boost Min Temperature", None, "number"],
-    "ctrl": ["Control type", None, "sensor"],
+    "ctrl": ["Control type", None, "ctrl_type"],
 }

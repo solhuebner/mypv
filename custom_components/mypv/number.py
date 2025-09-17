@@ -83,6 +83,7 @@ class MpvPidPowerControl(MpvPowerControl):
         """Initialize the switch."""
         super().__init__(device, key, info)
         self._name = "PID " + info[0]
+        self._attr_native_min_value = -self._attr_native_max_value
 
     @callback
     def _handle_coordinator_update(self) -> None:
