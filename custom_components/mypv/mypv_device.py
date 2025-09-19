@@ -13,6 +13,7 @@ from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvTou
 from .sensor import (
     MpvCtrlTypeSensor,
     MpvDevStatSensor,
+    MpvEnergyDailySensor,
     MpvEnergySensor,
     MpvOutStatSensor,
     MpvSensor,
@@ -60,7 +61,7 @@ class MpyDevice(CoordinatorEntity):
         self.pid_power_set = 0
         self.logger = _LOGGER
         self.control_enabled = True
-        self.energy_sensor = None
+        self.energy_sensors = []
 
     async def initialize(self):
         """Get setup information, find sensors."""
@@ -194,7 +195,16 @@ class MpyDevice(CoordinatorEntity):
                             SENSOR_TYPES[key],
                         )
                     )  # energy
-                    self.energy_sensor = self.sensors[-1]
+                    self.energy_sensors.append(self.sensors[-1])
+                    self.sensors.append(
+                        MpvEnergyDailySensor(
+                            self,
+                            f"intd_{key}",
+                            SENSOR_TYPES[f"intd_{key}"],
+                            SENSOR_TYPES[key],
+                        )
+                    )  # energy daily
+                    self.energy_sensors.append(self.sensors[-1])
             if SENSOR_TYPES[key][2] in ["sensor_always"]:
                 # Sensor value might not be available at statrtup
                 self.sensors.append(MpvSensor(self, key, SENSOR_TYPES[key]))
@@ -235,8 +245,8 @@ class MpyDevice(CoordinatorEntity):
 
     async def update(self):
         """Update all sensors."""
-        if self.energy_sensor is not None:
-            await self.energy_sensor.async_update()  # type: ignore  # noqa: PGH003
+        for en_sensor in self.energy_sensors:
+            await en_sensor.async_update()  # type: ignore  # noqa: PGH003
         resp = await self.comm.data_update(self)
         if resp:
             self.data = resp

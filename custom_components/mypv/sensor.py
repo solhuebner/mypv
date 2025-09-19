@@ -5,11 +5,14 @@ from decimal import Decimal
 import logging
 from typing import Any
 
+import pytz
+
 from homeassistant.components.integration.sensor import IntegrationSensor, UnitOfTime
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
+    datetime,
 )
 from homeassistant.const import (
     UnitOfElectricCurrent,
@@ -411,6 +414,39 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
     async def async_update(self):
         """Update the sensor state."""
         await self.async_get_last_sensor_data()
+        if self._state is None:
+            self._state = Decimal("0.0")
+            self._last_value = 0.0
+            return
+        try:
+            self._last_value = float(self._state)
+        except ValueError:
+            _LOGGER.error("Failed to convert state to float: %s", self._state)
+            self._last_value = 0.0
+
+
+class MpvEnergyDailySensor(MpvEnergySensor):
+    """Return energy state by integrating power consumption."""
+
+    def __init__(self, device, key, info, source) -> None:
+        """Initialize the sensor."""
+        MpvEnergySensor.__init__(self, device, key, info, source)
+        ha_timezone_str = self.comm.hass.config.time_zone
+        self.ha_timezone = pytz.timezone(ha_timezone_str)
+        self._last_update = datetime.now(self.ha_timezone).date()
+
+    @property
+    def last_reset(self):
+        """Return last reset of sensor."""
+        return None
+
+    async def async_update(self):
+        """Update the sensor state."""
+        await self.async_get_last_sensor_data()
+        if datetime.now(self.ha_timezone).date() != self._last_update:
+            self._state = Decimal("0.0")
+            self._last_value = 0.0
+            self._last_update = datetime.now(self.ha_timezone).date()
         if self._state is None:
             self._state = Decimal("0.0")
             self._last_value = 0.0

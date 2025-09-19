@@ -41,6 +41,27 @@ SENSOR_TYPES = {
     "int_power_ac9": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
     "int_power_ac9s": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
     "int_power_act": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
+    "intd_power": ["Energy consumption daily", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
+    "intd_power_elwa2": [
+        "Energy consumption daily",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intd_power_ac9": [
+        "Energy consumption daily",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intd_power_ac9s": [
+        "Energy consumption daily",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intd_power_act": [
+        "Energy consumption daily",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
     "power_solar": ["Power Solar ELWA-2", UnitOfPower.WATT, "sensor"],
     "power_grid": ["Power Grid ELWA-2", UnitOfPower.WATT, "sensor"],
     "boostpower": ["Boost Power", UnitOfPower.WATT, "sensor"],
