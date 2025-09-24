@@ -51,6 +51,7 @@ class MpvSensor(CoordinatorEntity, SensorEntity):
         super().__init__(device.comm)
         self.device = device
         self.comm = device.comm
+        self.hass = device.comm.hass
         self._key = key
         self._name = info[0]
         self._unit_of_measurement = info[1]
@@ -365,11 +366,14 @@ class MpvDevStatSensor(MpvSensor):
 class MpvEnergySensor(IntegrationSensor, MpvSensor):
     """Return energy state by integrating power consumption."""
 
-    _attr_state_class = SensorStateClass.TOTAL
+    _attr_has_entity_name = True
+    _attr_should_poll = True
 
     def __init__(self, device, key, info, source) -> None:
         """Initialize the sensor."""
         self._last_value = 0
+        self._last_reset = None
+
         # Explicitly initialize both superclasses
         IntegrationSensor.__init__(
             self,
@@ -383,8 +387,9 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
             unique_id=f"{device.serial_number}_{info[0]}",
             max_sub_interval=timedelta(seconds=10),
         )
-        self._name = info[0]
         MpvSensor.__init__(self, device, key, info)
+        ha_timezone_str = device.comm.hass.config.time_zone
+        self.ha_timezone = pytz.timezone(ha_timezone_str)
 
     @property
     def icon(self):
@@ -392,9 +397,9 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         return "mdi:meter-electric"
 
     @property
-    def state(self):
-        """Return the state of the device."""
-        return Decimal(self._last_value)
+    def state_class(self):
+        """Return device state class of sensor."""
+        return SensorStateClass.TOTAL
 
     @property
     def device_class(self):
@@ -402,14 +407,19 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         return SensorDeviceClass.ENERGY
 
     @property
-    def state_class(self):
-        """Return state class of sensor."""
-        return SensorStateClass.TOTAL
+    def state(self):
+        """Return the state of the device."""
+        return Decimal(self._last_value)
 
     @property
     def last_reset(self):
         """Return last reset of sensor."""
-        return None
+        return self._last_reset
+
+    @property
+    def unique_id(self):
+        """Return unique id based on device serial and variable."""
+        return f"{self.device.serial_number}_{self._name}"
 
     async def async_update(self):
         """Update the sensor state."""
@@ -424,29 +434,51 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
             _LOGGER.error("Failed to convert state to float: %s", self._state)
             self._last_value = 0.0
 
+    async def async_reset(self) -> None:
+        """Reset the sensor's state."""
+        _LOGGER.info("Resetting energy sensor %s", self.entity_id)
+        self._state = Decimal("0.0")
+        self._last_reset = datetime.now(pytz.utc)
+        self.async_write_ha_state()
+
 
 class MpvEnergyDailySensor(MpvEnergySensor):
     """Return energy state by integrating power consumption."""
 
     def __init__(self, device, key, info, source) -> None:
         """Initialize the sensor."""
-        MpvEnergySensor.__init__(self, device, key, info, source)
-        ha_timezone_str = self.comm.hass.config.time_zone
-        self.ha_timezone = pytz.timezone(ha_timezone_str)
-        self._last_update = datetime.now(self.ha_timezone).date()
-
-    @property
-    def last_reset(self):
-        """Return last reset of sensor."""
-        return None
+        super().__init__(device, key, info, source)
+        self._last_reset = datetime.now(self.ha_timezone)
 
     async def async_update(self):
         """Update the sensor state."""
         await self.async_get_last_sensor_data()
-        if datetime.now(self.ha_timezone).date() != self._last_update:
+        if datetime.now(self.ha_timezone).date() != self._last_reset.date():
+            await self.async_reset()
+        if self._state is None:
             self._state = Decimal("0.0")
             self._last_value = 0.0
-            self._last_update = datetime.now(self.ha_timezone).date()
+            return
+        try:
+            self._last_value = float(self._state)
+        except ValueError:
+            _LOGGER.error("Failed to convert state to float: %s", self._state)
+            self._last_value = 0.0
+
+
+class MpvEnergyMonthlySensor(MpvEnergySensor):
+    """Return energy state by integrating power consumption."""
+
+    def __init__(self, device, key, info, source) -> None:
+        """Initialize the sensor."""
+        super().__init__(device, key, info, source)
+        self._last_reset = datetime.now(self.ha_timezone)
+
+    async def async_update(self):
+        """Update the sensor state."""
+        await self.async_get_last_sensor_data()
+        if datetime.now(self.ha_timezone).month != self._last_reset.month:
+            await self.async_reset()
         if self._state is None:
             self._state = Decimal("0.0")
             self._last_value = 0.0

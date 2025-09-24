@@ -62,6 +62,27 @@ SENSOR_TYPES = {
         UnitOfEnergy.KILO_WATT_HOUR,
         "sensor",
     ],
+    "intm_power": ["Energy consumption monthly", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
+    "intm_power_elwa2": [
+        "Energy consumption monthly",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intm_power_ac9": [
+        "Energy consumption monthly",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intm_power_ac9s": [
+        "Energy consumption monthly",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
+    "intm_power_act": [
+        "Energy consumption monthly",
+        UnitOfEnergy.KILO_WATT_HOUR,
+        "sensor",
+    ],
     "power_solar": ["Power Solar ELWA-2", UnitOfPower.WATT, "sensor"],
     "power_grid": ["Power Grid ELWA-2", UnitOfPower.WATT, "sensor"],
     "boostpower": ["Boost Power", UnitOfPower.WATT, "sensor"],

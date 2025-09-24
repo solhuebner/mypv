@@ -14,6 +14,7 @@ from .sensor import (
     MpvCtrlTypeSensor,
     MpvDevStatSensor,
     MpvEnergyDailySensor,
+    MpvEnergyMonthlySensor,
     MpvEnergySensor,
     MpvOutStatSensor,
     MpvSensor,
@@ -197,6 +198,15 @@ class MpyDevice(CoordinatorEntity):
                     )  # energy
                     self.energy_sensors.append(self.sensors[-1])
                     self.sensors.append(
+                        MpvEnergyMonthlySensor(
+                            self,
+                            f"intm_{key}",
+                            SENSOR_TYPES[f"intm_{key}"],
+                            SENSOR_TYPES[key],
+                        )
+                    )  # energy daily
+                    self.energy_sensors.append(self.sensors[-1])
+                    self.sensors.append(
                         MpvEnergyDailySensor(
                             self,
                             f"intd_{key}",
@@ -241,7 +251,6 @@ class MpyDevice(CoordinatorEntity):
         if self.model != "Solthor":
             self.switches.append(MpvHttpSwitch(self, "ctrl"))
             self.controls.append(MpvToutControl(self, "tout"))
-        await self.update()
 
     async def update(self):
         """Update all sensors."""
