@@ -23,6 +23,7 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -373,12 +374,22 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
         """Initialize the sensor."""
         self._last_value = 0
         self._last_reset = None
+        # Get name_by_user from device registry if available
+        devreg = dr.async_get(device.comm.hass)
+        for dev_id in devreg.devices.data:
+            dev = devreg.devices.get(dev_id)
+            if dev is not None:
+                if (DOMAIN, device.serial_number) in dev.identifiers:
+                    self.name_by_user = dev.name_by_user
+                    break
+        if not self.name_by_user:
+            self.name_by_user = device.name
 
         # Explicitly initialize both superclasses
         IntegrationSensor.__init__(
             self,
             device.comm.hass,
-            source_entity=f"sensor.{(device.name + '_' + source[0]).replace(' ', '_').replace('-', '_').lower()}",
+            source_entity=f"sensor.{(self.name_by_user + '_' + source[0]).replace(' ', '_').replace('-', '_').lower()}",
             name=info[0],
             round_digits=1,
             integration_method="trapezoidal",
