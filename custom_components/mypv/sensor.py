@@ -370,7 +370,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
     _attr_has_entity_name = True
     _attr_should_poll = True
 
-    def __init__(self, device, key, info, source) -> None:
+    def __init__(self, device, key, info, source, tz) -> None:
         """Initialize the sensor."""
         self._last_value = 0
         self._last_reset = None
@@ -384,6 +384,7 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
                     break
         if not self.name_by_user:
             self.name_by_user = device.name
+        self.ha_timezone = tz
 
         # Explicitly initialize both superclasses
         IntegrationSensor.__init__(
@@ -399,8 +400,6 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
             max_sub_interval=timedelta(seconds=10),
         )
         MpvSensor.__init__(self, device, key, info)
-        ha_timezone_str = device.comm.hass.config.time_zone
-        self.ha_timezone = pytz.timezone(ha_timezone_str)
 
     @property
     def icon(self):
@@ -456,9 +455,9 @@ class MpvEnergySensor(IntegrationSensor, MpvSensor):
 class MpvEnergyDailySensor(MpvEnergySensor):
     """Return energy state by integrating power consumption."""
 
-    def __init__(self, device, key, info, source) -> None:
+    def __init__(self, device, key, info, source, tz) -> None:
         """Initialize the sensor."""
-        super().__init__(device, key, info, source)
+        super().__init__(device, key, info, source, tz)
         self._last_reset = datetime.now(self.ha_timezone)
 
     async def async_update(self):
@@ -480,9 +479,9 @@ class MpvEnergyDailySensor(MpvEnergySensor):
 class MpvEnergyMonthlySensor(MpvEnergySensor):
     """Return energy state by integrating power consumption."""
 
-    def __init__(self, device, key, info, source) -> None:
+    def __init__(self, device, key, info, source, tz) -> None:
         """Initialize the sensor."""
-        super().__init__(device, key, info, source)
+        super().__init__(device, key, info, source, tz)
         self._last_reset = datetime.now(self.ha_timezone)
 
     async def async_update(self):

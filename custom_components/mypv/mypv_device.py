@@ -2,6 +2,8 @@
 
 import logging
 
+import pytz
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -103,6 +105,8 @@ class MpyDevice(CoordinatorEntity):
             if key in data_keys:
                 data_keys.remove(key)
 
+        ha_timezone_str = self.comm.hass.config.time_zone
+        tz = await self.hass.async_add_executor_job(pytz.timezone, ha_timezone_str)
         data_keys = list(self.data.keys())  # type: ignore  # noqa: PGH003
         defined_data_keys = list(SENSOR_TYPES.keys())  # type: ignore  # noqa: PGH003
         setup_keys = list(self.setup.keys())  # type: ignore  # noqa: PGH003
@@ -194,6 +198,7 @@ class MpyDevice(CoordinatorEntity):
                             f"int_{key}",
                             SENSOR_TYPES[f"int_{key}"],
                             SENSOR_TYPES[key],
+                            tz,
                         )
                     )  # energy
                     self.energy_sensors.append(self.sensors[-1])
@@ -203,6 +208,7 @@ class MpyDevice(CoordinatorEntity):
                             f"intm_{key}",
                             SENSOR_TYPES[f"intm_{key}"],
                             SENSOR_TYPES[key],
+                            tz,
                         )
                     )  # energy daily
                     self.energy_sensors.append(self.sensors[-1])
@@ -212,6 +218,7 @@ class MpyDevice(CoordinatorEntity):
                             f"intd_{key}",
                             SENSOR_TYPES[f"intd_{key}"],
                             SENSOR_TYPES[key],
+                            tz,
                         )
                     )  # energy daily
                     self.energy_sensors.append(self.sensors[-1])
