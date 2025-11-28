@@ -106,7 +106,7 @@ class MpyDevice(CoordinatorEntity):
                 data_keys.remove(key)
 
         ha_timezone_str = self.comm.hass.config.time_zone
-        tz = await self.hass.async_add_executor_job(pytz.timezone, ha_timezone_str)
+        tz = await self.comm.hass.async_add_executor_job(pytz.timezone, ha_timezone_str)
         data_keys = list(self.data.keys())  # type: ignore  # noqa: PGH003
         defined_data_keys = list(SENSOR_TYPES.keys())  # type: ignore  # noqa: PGH003
         setup_keys = list(self.setup.keys())  # type: ignore  # noqa: PGH003
