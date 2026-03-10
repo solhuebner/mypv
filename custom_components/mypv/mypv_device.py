@@ -12,8 +12,8 @@ from .binary_sensor import MpvBin1Sensor, MpvBin2Sensor, MpvBin3Sensor, MpvBinSe
 from .button import MpvBoostButton, MpvBoostOffButton
 from .const import DOMAIN, SENSOR_TYPES, SETUP_TYPES
 from .number import MpvPidPowerControl, MpvPowerControl, MpvSetupControl, MpvToutControl
+from .select import MpvCtrlTypeSelect
 from .sensor import (
-    MpvCtrlTypeSensor,
     MpvDevStatSensor,
     MpvEnergyDailySensor,
     MpvEnergyMonthlySensor,
@@ -58,6 +58,7 @@ class MpyDevice(CoordinatorEntity):
         self.buttons = []
         self.switches = []
         self.text_sensors = []
+        self.selects = []
         self.state_dict = {}
         self.max_power = 3600
         self.pid_power = 0
@@ -246,7 +247,8 @@ class MpyDevice(CoordinatorEntity):
                 if SETUP_TYPES[key][2] in ["sensor", "text", "ip_string"]:
                     self.sensors.append(MpvSensor(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["ctrl_type"]:
-                    self.sensors.append(MpvCtrlTypeSensor(self, key, SETUP_TYPES[key]))
+                    self.logger.info(f"Creating select entity for {key}")  # type: ignore  # noqa: G004
+                    self.selects.append(MpvCtrlTypeSelect(self, key, SETUP_TYPES[key]))
                 elif SETUP_TYPES[key][2] in ["binary_sensor"]:
                     self.binary_sensors.append(
                         MpvBinSensor(self, key, SETUP_TYPES[key])

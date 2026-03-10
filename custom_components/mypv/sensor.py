@@ -181,69 +181,6 @@ class MpvOutStatSensor(MpvSensor):
         return "mdi:format-list-numbered"
 
 
-class MpvCtrlTypeSensor(MpvSensor):
-    """Return control type state."""
-
-    def __init__(self, device, key, info) -> None:
-        """Initialize the sensor."""
-        super().__init__(device, key, info)
-        self._last_value = 0
-        self._enum = {
-            0: "Auto Detect",
-            1: "HTTP",
-            2: "Modbus TCP",
-            3: "Fronius Auto",
-            4: "Fronius Manual",
-            5: "SMA Home Manager",
-            6: "Steca Auto",
-            7: "Varta Auto",
-            8: "Varta Manual",
-            10: "RCT Power Manual",
-            12: "my-PV Meter Auto",
-            13: "my-PV Meter Manual",
-            14: "my-PV Power Meter Direct",
-            15: "SMA Direct meter communication Auto",
-            16: "SMA Direct meter communication Manual",
-            19: "Digital Meter P1",
-            20: "Frequency",
-            21: "my-PV API",
-            100: "Fronius Sunspec Manual",
-            102: "Kostal PIKO IQ Plenticore plus Manual",
-            103: "Kostal Smart Energy Meter Manual",
-            104: "MEC electronics Manual",
-            105: "SolarEdge Manual",
-            106: "Victron Energy 1ph Manual",
-            107: "Victron Energy 3ph Manual",
-            108: "Huawei (Modbus TCP) Manual",
-            109: "Carlo Gavazzi EM24 Manual",
-            111: "Sungrow Manual",
-            112: "Fronius Gen24 Manual",
-            200: "Huawei (Modbus RTU)",
-            201: "Growatt (Modbus RTU)",
-            202: "Solax (Modbus RTU)",
-            203: "Qcells (Modbus RTU)",
-            204: "IME Conto D4 Modbus MID (Modbus RTU)",
-            211: "my-PV WiFi Meter (Modbus RTU)",
-        }
-
-    @property
-    def icon(self):
-        """Return icon."""
-        return "mdi:format-list-bulleted-type"
-
-    @property
-    def state(self):
-        """Return the state of the device."""
-
-        try:
-            state = self.device.setup[self._key]
-            self._last_value = state
-            return self._enum[state]
-        except Exception:  # noqa: BLE001
-            state = self._last_value
-        return "Unknown"
-
-
 class MpvUpdateSensor(MpvSensor):
     """Return update state from enum."""
 
