@@ -129,8 +129,9 @@ class MpvCtrlTypeSelect(CoordinatorEntity, SelectEntity):
         # Update _last_value for current_option property
         try:
             state = self.device.setup[self._key]
-            self._last_value = state
-            _LOGGER.debug(f"Select entity {self._name} updated to {self._enum.get(state)}")
+            if state != self._last_value:
+                self._last_value = state
+                self.async_write_ha_state()
         except Exception:  # noqa: BLE001
             pass
         self.async_write_ha_state()
