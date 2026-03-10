@@ -134,7 +134,6 @@ class MpvCtrlTypeSelect(CoordinatorEntity, SelectEntity):
                 self.async_write_ha_state()
         except Exception:  # noqa: BLE001
             pass
-        self.async_write_ha_state()
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
