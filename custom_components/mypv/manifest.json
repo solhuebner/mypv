@@ -2,7 +2,7 @@
   "domain": "mypv",
   "version": "1.2.0",
   "name": "myPV",
-  "documentation": "https://github.com/dneprojects/mvpv",
+  "documentation": "https://github.com/knoche87/mvpv",
   "config_flow": true,
   "dependencies": [],
   "after_dependencies": ["network_connectivity"],
