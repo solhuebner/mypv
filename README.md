@@ -2,17 +2,17 @@
 
 Home Assistant Component for myPV
 
-<a href="https://github.com/knoche87/mypv"></a>
+<a href="https://github.com/dneprojects/mypv"></a>
 <p align="center">
   <a href="https://github.com/custom-components/hacs"><img src="https://img.shields.io/badge/HACS-Custom-orange.svg"></a>
-  <img src="https://img.shields.io/github/v/release/knoche87/mypv" alt="Current version">
+  <img src="https://img.shields.io/github/v/release/dneprojects/mypv" alt="Current version">
 </p>
 
 ## Installation
 
 ### HACS (recommended)
 
-Add user defined repository 'https://github.com/knoche87/mypv' for type integration.
+Add user defined repository 'https://github.com/dneprojects/mypv' for type integration.
 Search for integration 'myPV', use the three dot menu on the right side to download.
 Restart Home Assistant.
 Add integration 'myPV' in the settings
