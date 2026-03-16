@@ -41,7 +41,7 @@ The Boost mode, if enabled, works on a weekly schedule to maintain a given minim
 
 ## Credits
 
-This is a fork of https://github.com/dneprojects/mypv and is based on an implementation https://github.com/zaubererty/homeassistant-mvpv.
+This integration is based on an implementation https://github.com/zaubererty/homeassistant-mvpv.
 Although it worked fine, the main feature, controlling the device by home assistant automations was not possible.
 So I totally rewrote the integration. 
 However, thanks to the work of zaubererty at this place!
