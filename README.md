@@ -31,7 +31,7 @@ Enter an IP address, at which a myPV devices will be found.
 ## Features
 
 The myPV custom integration works locally in the home network utilizing the http api. So it doesn't need any login.
-- The integration is written to support multiple devices. Meanwhile, it has beeny tested with ELWA, ELWA 2, AC-THOR 9s, and SOLTHOR-DC. For multiple devices, please use the configuration step with a different IP address.
+- The integration is written to support multiple devices. Meanwhile, it has beeny tested with ELWA, ELWA 2, AC-THOR 1, AC-THOR 9s, and SOLTHOR-DC. For multiple devices, please use the configuration step with a different IP address.
 - It offers binary sensors and sensors for all data points provided by the myPV devices.
 - The heating power can be set manually by an input number between 0 and 3000 W (3600 W for ELWA 2, 9000 W for AC THOR 9s). 
 This will turn on the heater for a predefined time period. This period has to been setup via web or cloud setup, as it is not supported by the myPV api. However, if the power value (usually the surplus of collected solar power) is set by an automation repeatedly within that period, a continuous control can be achieved.
