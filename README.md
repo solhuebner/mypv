@@ -42,7 +42,7 @@ The Boost mode, if enabled, works on a weekly schedule to maintain a given minim
 
 ## Maintenance
 
-This integration is actively maintained. If any problem occurs, please use the issues category on github to report it. You can also use the issues report if you have an additional feature request.
+This integration is actively maintained. If any problem occurs, please use the issues category on github to report it. You can also open an issues report if you have an additional feature request.
 
 ## Credits
 
