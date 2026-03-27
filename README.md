@@ -38,6 +38,7 @@ This will turn on the heater for a predefined time period. This period has to be
 - In the same way, an upper power bound for the device's internal PID controller can be given. The internal PID controller uses the same time period as the external control described above.
 - In order to enable both control entities, the control type has to be set to "html" via web or cloud setup. Otherwise, only sensor data points will be exposed as Home Assistant entities.
 The Boost mode, if enabled, works on a weekly schedule to maintain a given minimum temperature. It can be started manually by a button press (if enabled). It stops, if the temperature preset is reached.
+- Three energy consumption entities show the amount of spent energy per day, per month, or total. By means of an action called mypv.reset_energy_sensor each one of these cumulated values can be reset to zero.
 
 ## Credits
 
