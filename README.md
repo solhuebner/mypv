@@ -40,6 +40,10 @@ This will turn on the heater for a predefined time period. This period has to be
 The Boost mode, if enabled, works on a weekly schedule to maintain a given minimum temperature. It can be started manually by a button press (if enabled). It stops, if the temperature preset is reached.
 - Three energy consumption entities show the amount of spent energy per day, per month, or total. By means of an action called mypv.reset_energy_sensor each one of these cumulated values can be reset to zero.
 
+## Maintenance
+
+This integration is actively maintained. If any problem occurs, please use the issues category on github to report it. You can also use the issues report if you have an additional feature request.
+
 ## Credits
 
 This integration is based on an implementation https://github.com/zaubererty/homeassistant-mvpv.
