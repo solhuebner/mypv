@@ -44,6 +44,6 @@ The Boost mode, if enabled, works on a weekly schedule to maintain a given minim
 
 This integration is based on an implementation https://github.com/zaubererty/homeassistant-mvpv.
 Although it worked fine, the main feature, controlling the device by home assistant automations was not possible.
-So I totally rewrote the integration. 
+So I totally rewrote the integration and added a lot of extensions. 
 However, thanks to the work of zaubererty at this place!
 
