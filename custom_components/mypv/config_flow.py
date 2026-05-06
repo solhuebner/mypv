@@ -9,7 +9,7 @@ import requests
 from requests.exceptions import ConnectTimeout, HTTPError
 import voluptuous as vol
 
-from homeassistant import config_entries, exceptions
+from homeassistant import config_entries
 from homeassistant.components import dhcp
 from homeassistant.core import HomeAssistant, callback
 

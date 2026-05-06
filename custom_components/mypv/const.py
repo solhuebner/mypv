@@ -36,6 +36,7 @@ SENSOR_TYPES = {
     "power_ac9": ["Power AC9", UnitOfPower.WATT, "control"],
     "power_ac9s": ["Power AC9s", UnitOfPower.WATT, "control"],
     "power_act": ["Power", UnitOfPower.WATT, "control"],
+    "power_max": ["Power max", UnitOfPower.WATT, "sensor"],
     "int_power": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
     "int_power_elwa2": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
     "int_power_ac9": ["Energy consumption", UnitOfEnergy.KILO_WATT_HOUR, "sensor"],
