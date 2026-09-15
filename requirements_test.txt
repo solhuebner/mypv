@@ -1,0 +1,33 @@
+# Test-only requirements for the myPV custom integration.
+#
+# Install with:
+#   uv pip install -r requirements_test.txt
+#
+# These match the habitron repository's pins on purpose: both custom
+# integrations are developed side by side in the same core checkout and share
+# one test environment, so a single `pytest-homeassistant-custom-component`
+# decides which Home Assistant both are tested against. Bump them together.
+
+# Pytest framework + HA test harness for custom components.
+#
+# ``pytest-homeassistant-custom-component`` is pinned exactly: it pins HA core
+# in turn (0.13.357 -> homeassistant==2026.8.3). Left open, an install walks
+# onto a newer HA -- pre-releases included -- and CI starts failing on things
+# that do not reproduce locally.
+pytest>=8.0
+pytest-asyncio>=0.23
+pytest-cov>=5.0
+pytest-homeassistant-custom-component==0.13.357
+
+# Snapshot testing (used by HA-style integration tests).
+syrupy>=4.6
+
+# No runtime wheels are needed: the manifest declares no requirements, and the
+# integration imports only stock Home Assistant platform components
+# (binary_sensor, button, number, select, sensor, switch, update).
+
+# Lint + type-check tooling. ruff is pinned to the version this repo's
+# pre-commit hook uses (.pre-commit-config.yaml), which in turn follows the
+# version Home Assistant core pins, so that "clean here" == "clean in core".
+ruff==0.16.5
+mypy>=1.13
